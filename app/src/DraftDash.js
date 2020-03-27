@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import HostGame from './HostGame';
+import DraftGame from './DraftGame';
 import { getHostGames } from './db/games';
 import HostGameSummary from './HostGameSummary';
 
-export default function HostDash({ setDashState, user }) {
+function newGame({ display_name, id }) {
+  return {
+    name: '',
+    creator: {
+      display_name,
+      id,
+    },
+    quiz_rounds: [],
+  };
+}
+
+export default function DraftDash({ setDashState, user }) {
   const [error, setError] = useState(null);
   const [games, setGames] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -14,7 +25,7 @@ export default function HostDash({ setDashState, user }) {
         if (resp.ok) {
           return resp.json();
         } else {
-          throw new Error('There was a problem retrieving your games');
+          throw new Error('There was a problem retrieving your games.');
         }
       })
       .then((games) => setGames(games))
@@ -22,7 +33,7 @@ export default function HostDash({ setDashState, user }) {
   }, [games]);
 
   return selectedGame ? (
-    <HostGame game={selectedGame} user={user} />
+    <DraftGame game={selectedGame} user={user} />
   ) : (
     <div>
       {error ? <div>{error}</div> : null}
@@ -34,6 +45,11 @@ export default function HostDash({ setDashState, user }) {
         ) : (
           <h4>No Games</h4>
         )}
+      </div>
+      <div>
+        <button onClick={() => setSelectedGame(newGame(user))}>
+          Create Game
+        </button>
       </div>
       <div>
         <button onClick={() => setDashState(null)}>Back</button>
