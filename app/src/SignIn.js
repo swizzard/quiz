@@ -38,7 +38,6 @@ function SignIn({ setUser }) {
   }
 
   function doSignIn() {
-    console.log('try doSignIn');
     if (valForm()) {
       newUser(email, password, '', ip)
         .then((resp) => {
@@ -60,17 +59,21 @@ function SignIn({ setUser }) {
   }
 
   function doSignUp() {
-    console.log('try doSignUp');
     if (valForm()) {
-      console.log('doSignUp');
       newUser(email, password, displayName, ip)
-        .then((resp) => resp.json())
+        .then((resp) => {
+          if (resp.ok) {
+            return resp.json();
+          } else {
+            throw new Error('There was an error creating your account');
+          }
+        })
         .then((jsn) => {
           let user = jsn[0];
           if (user && user.id !== -1) {
             setUser(user);
           } else {
-            setError('There was an error creating your account.');
+            setError('There was an error creating your account');
           }
         })
         .catch((e) => setError(e));
