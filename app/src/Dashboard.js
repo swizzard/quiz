@@ -18,16 +18,13 @@ export default function DashboardPicker({ user }) {
   function displayDash() {
     switch (dashState) {
       case PLAY:
-        <PlayDash user={user} setDashState={setDashState} />;
-        break;
+        return <PlayDash user={user} setDashState={setDashState} />;
       case HOST:
-        <HostDash user={user} setDashState={setDashState} />;
-        break;
+        return <HostDash user={user} setDashState={setDashState} />;
       case DRAFT:
-        <DraftDash user={user} setDashState={setDashState} />;
-        break;
+        return <DraftDash user={user} setDashState={setDashState} />;
       default:
-        null;
+        return null;
     }
   }
 

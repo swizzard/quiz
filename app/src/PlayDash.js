@@ -18,7 +18,7 @@ export default function PlayDash({ setDashState, user }) {
           }
         })
         .then((jsn) => setGame(jsn))
-        .catch((e) => setErr(e));
+        .catch((e) => setError(e));
     } else {
       setError('Missing game code');
     }

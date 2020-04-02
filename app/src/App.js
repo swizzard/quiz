@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
 import SignIn from './SignIn';
+import DashboardPicker from './Dashboard';
 
 function App() {
   const [user, setUser] = useState(null);
-  if (user) {
-    return (
-      <div>
-        <p>{user.email}</p>
-        <p>{user.display_name}</p>
-      </div>
-    );
-  } else {
-    return <SignIn setUser={setUser} />;
-  }
+  return user ? <DashboardPicker user={user} /> : <SignIn setUser={setUser} />;
 }
 
 export default App;
