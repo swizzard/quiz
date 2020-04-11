@@ -1,0 +1,2 @@
+ALTER TABLE quiz DROP COLUMN IF EXISTS quiz_code;
+ALTER TABLE game ADD COLUMN IF NOT EXISTS code uuid NOT NULL DEFAULT gen_random_uuid();

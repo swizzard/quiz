@@ -1,0 +1,2 @@
+ALTER TABLE game_participant ALTER COLUMN score SET DEFAULT 0;
+ALTER TABLE game_participant ALTER COLUMN score SET NOT NULL;

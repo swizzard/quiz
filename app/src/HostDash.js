@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import HostGame from './HostGame';
-import { getHostGames } from './db/games';
+import { deleteGame, getHostGames } from './db/games';
 import HostGameSummary from './HostGameSummary';
 
 export default function HostDash({ setDashState, user }) {
@@ -21,6 +21,15 @@ export default function HostDash({ setDashState, user }) {
       .catch((e) => setError(e));
   }, [games]);
 
+  function removeGame({ id }) {
+    return () => {
+      deleteGame(user.id, id)
+        .then(() => {
+          setGames(games.filter((g) => g.id !== id));
+        })
+        .catch(() => setError('There was a problem deleting your game'));
+    };
+  }
   return selectedGame ? (
     <HostGame game={selectedGame} user={user} />
   ) : (
@@ -29,7 +38,12 @@ export default function HostDash({ setDashState, user }) {
       <div>
         {games.length > 0 ? (
           games.map((g) => (
-            <HostGameSummary game={g} select={setSelectedGame} user={user} />
+            <HostGameSummary
+              game={g}
+              select={setSelectedGame}
+              remove={removeGame(g.id)}
+              selectLabel="Host Game"
+            />
           ))
         ) : (
           <h4>No Games</h4>

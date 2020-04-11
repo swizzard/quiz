@@ -1,0 +1,1 @@
+ALTER TABLE game ADD COLUMN IF NOT EXISTS completed boolean NOT NULL DEFAULT false;

@@ -118,11 +118,27 @@ function Round({ ix, qs, setQs }) {
   );
 }
 
-export default function DraftGame({ user }) {
-  const [questions, setQuestions] = useState([]);
+function postDraft(user, questions, name, goBack, setError) {
+  setError(null);
+  submitDraft(user, name, questions)
+    .then(() => goBack())
+    .catch(() => {
+      setError('There was a problem submitting your game.');
+    });
+}
+
+export default function DraftGame({ game, goBack, user }) {
+  const [error, setError] = useState(null);
+  const [questions, setQuestions] = useState(game.quiz_rounds);
+  const [name, setName] = useState(game.name);
   return (
     <div>
-      <form onSubmit={() => submitDraft(user, questions)}>
+      {error ? <div>{error}</div> : null} }
+      <form onSubmit={() => postDraft(user, questions, name, goBack, setError)}>
+        <div>
+          <label for="quizName">Title</label>
+          <input id="quizName" onChange={(e) => setName(e.target.value)} />
+        </div>
         <div>
           {questions.map((_, ix) => (
             <Round ix={ix} qs={questions} setQs={setQuestions} />

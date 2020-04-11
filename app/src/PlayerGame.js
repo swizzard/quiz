@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { postAnswers } from './db/game';
+import { postAnswers } from './db/games';
 
 function newAnswers(game, { display_name, id }) {
   return {
@@ -13,14 +13,14 @@ function newAnswers(game, { display_name, id }) {
 
 function setAnswer(roundNo, questionNo) {
   return (ans, response, setAns) => {
-    ans[roundNo - 1][questionNo] = response;
+    ans[roundNo][questionNo] = response;
     setAns(ans);
   };
 }
 
 function submitAnswers(answers, user, setError, setPosted) {
   setError(null);
-  postAnswers(answers, user).then((resp) => {
+  postAnswers(user, answers).then((resp) => {
     if (resp.ok) {
       setPosted(true);
     } else {
@@ -52,7 +52,7 @@ export default function PlayerGame({ game, user }) {
   return (
     <div>
       <h3>
-        {game.name} - Round {currentRound}
+        {game.name} - Round {currentRound + 1}
       </h3>
       {error ? <div>{error}</div> : null}
       {posted ? (
@@ -88,7 +88,8 @@ export default function PlayerGame({ game, user }) {
       )}
       {currentRound === finalRound ? (
         <div>
-          <button onClick={() => postAnswers(answers, user)}>
+          <button
+            onClick={() => submitAnswers(answers, user, setError, setPosted)}>
             Submit Answers
           </button>
         </div>
