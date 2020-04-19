@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { createHostedGame, getParticipants } from 'db/game';
+import { createHostedGame, getParticipants } from './db/game';
 import ScoreGame from './ScoreGame';
 
 export default function HostGame({ game, user }) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getParticipantAnswers, submitScore } from 'db/game';
+import { getParticipantAnswers, submitScore } from './db/game';
 
 export default function ScoreGame({ game }) {
   const [error, setError] = useState(null);

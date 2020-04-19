@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import HostGame from './HostGame';
-import { deleteGame, getHostGames } from './db/games';
+import { deleteGame, getHostGames } from './db/game';
 import HostGameSummary from './HostGameSummary';
 
 export default function HostDash({ setDashState, user }) {

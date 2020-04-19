@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { submitDraft } from './db/games';
+import { submitDraft } from './db/game';
 
 function newQ() {
   return {
@@ -8,7 +8,7 @@ function newQ() {
   };
 }
 
-function Answer({ answer, ix, points, qs, setQs }) {
+function Answer({ answer, thisQ, qIx, roundIx, ix, points, qs, setQs }) {
   const id = `${roundIx}-${qIx}-${ix}`;
   return (
     <div key={id}>
@@ -70,7 +70,16 @@ function Question({ roundIx, qIx, qs, setQs }) {
         }}
       />
       {thisQ.answers.map(({ answer, points }, ix) => (
-        <Answer answer={answer} ix={ix} points={points} qs={qs} setQs={setQs} />
+        <Answer
+          answer={answer}
+          roundIx={roundIx}
+          qIx={qIx}
+          ix={ix}
+          points={points}
+          qs={qs}
+          setQs={setQs}
+          thisQ={thisQ}
+        />
       ))}
       <button
         type="button"

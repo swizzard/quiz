@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { postAnswers } from './db/games';
+import { postAnswers } from './db/game';
 
 function newAnswers(game, { id }) {
   const anss = {};

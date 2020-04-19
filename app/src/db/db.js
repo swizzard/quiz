@@ -32,7 +32,7 @@ export async function post(
     preferences.push('return=representation');
   }
   if (preferences.length) {
-    headers['Prefer'] = preferences.join('; ');
+    req.headers['Prefer'] = preferences.join('; ');
   }
   return fetch(buildEndpoint(endpoint, params), req);
 }
@@ -57,7 +57,7 @@ export async function del(endpoint, params) {
     if (rows.length) {
       return rows;
     } else {
-      throw new Exception('Not found');
+      throw new Error('Not found');
     }
   });
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DraftGame from './DraftGame';
-import { deleteGame, getHostGames } from './db/games';
+import { deleteGame, getHostGames } from './db/game';
 import HostGameSummary from './HostGameSummary';
 
 function newGame({ display_name, id }) {

@@ -16,7 +16,7 @@ export function submitDraft({ id }, name, questions) {
     name,
     questions,
   };
-  return post(ep, data, (single = true));
+  return post(ep, data, true);
 }
 
 export function deleteGame(userId, gameId) {
@@ -55,7 +55,7 @@ export function createHostedGame(userId, gameId) {
     userId,
     gameId,
   };
-  return post(ep, data, (single = true));
+  return post(ep, data, true);
 }
 
 export function getParticipants(code) {

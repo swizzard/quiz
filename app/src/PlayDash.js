@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PlayerGame from './PlayerGame';
-import { getGame } from './db/games';
+import { getGame } from './db/game';
 
 export default function PlayDash({ setDashState, user }) {
   const [gameCode, setGameCode] = useState(null);
