@@ -1,45 +1,12 @@
 import React, { useState } from 'react';
 import { postAnswers } from './db/games';
 
-function newAnswers(game, { display_name, id }) {
-  return {
-    player: {
-      display_name,
-      id,
-    },
-    answers: game.quiz_round.map(() => []),
-  };
-}
-
-function setAnswer(roundNo, questionNo) {
-  return (ans, response, setAns) => {
-    ans[roundNo][questionNo] = response;
-    setAns(ans);
-  };
-}
-
-function submitAnswers(answers, user, setError, setPosted) {
-  setError(null);
-  postAnswers(user, answers).then((resp) => {
-    if (resp.ok) {
-      setPosted(true);
-    } else {
-      setError('There was an error submitting your answers');
-    }
+function newAnswers(game, { id }) {
+  const anss = {};
+  game.quiz_round.forEach(({ answer: answers }) => {
+    answers.forEach(({ ansId }) => (anss[ansId] = ''));
   });
-}
-
-function PlayerAnswer({ answers, game, roundNo, questionNo, setAnswers }) {
-  const sa = setAnswer(roundNo, questionNo);
-  return (
-    <div key={`${game.quiz_code}-${roundNo}-${questionNo}`}>
-      <input
-        type="text"
-        placeholder="Your Answer"
-        onChange={(e) => sa(answers, e.target.value, setAnswers)}
-      />
-    </div>
-  );
+  return { playerId: id, answers: anss };
 }
 
 export default function PlayerGame({ game, user }) {
@@ -48,6 +15,44 @@ export default function PlayerGame({ game, user }) {
   const [posted, setPosted] = useState(false);
   const [error, setError] = useState(null);
   const finalRound = game.quiz_round.length - 1;
+
+  function setAnswer(ansId, response) {
+    answers[ansId] = response;
+    setAnswers(answers);
+  }
+
+  function submitAnswers() {
+    setError(null);
+    const errMessage = 'There was an error submitting your answers';
+    postAnswers(user, answers)
+      .then((resp) => {
+        if (resp.ok) {
+          setPosted(true);
+        } else {
+          setError(errMessage);
+        }
+      })
+      .catch(() => setError(errMessage));
+  }
+
+  function PlayerQuestion({ question: { answer: anss }, questionNo, roundNo }) {
+    return (
+      <div key={`${game.code}-${roundNo}-${questionNo}`}>
+        <h3>{questionNo}</h3>
+        {anss.map(({ id: ansId }) => (
+          <div key={`${ansId}`}>
+            <input
+              type="text"
+              placeholder="Your Answer"
+              onChange={(e) => {
+                setAnswer(ansId, e.target.value);
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -62,13 +67,11 @@ export default function PlayerGame({ game, user }) {
       ) : (
         <div>
           <div>
-            {game.quiz_round[currentRound].map((_, ix) => (
-              <PlayerAnswer
-                answers={answers}
-                game={game}
-                roundNo={currentRound}
+            {game.quiz_round[currentRound].map((question, ix) => (
+              <PlayerQuestion
+                question={question}
                 questionNo={ix}
-                setAnswers={setAnswers}
+                roundNo={currentRound}
               />
             ))}
           </div>

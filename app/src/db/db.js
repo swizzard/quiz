@@ -10,7 +10,13 @@ function buildEndpoint(endpoint, params = {}) {
   return `${API_URL}${endpoint}${stringify(params)}`;
 }
 
-export async function post(endpoint, data, single = false) {
+export async function post(
+  endpoint,
+  data,
+  params = {},
+  single = false,
+  returnRep = false,
+) {
   const req = {
     method: 'post',
     body: JSON.stringify(data),
@@ -18,10 +24,17 @@ export async function post(endpoint, data, single = false) {
       'Content-Type': 'application/json',
     },
   };
+  const preferences = [];
   if (single) {
-    req.headers['PREFER'] = 'params=single-object';
+    preferences.push('params=single-object');
   }
-  return fetch(buildEndpoint(endpoint), req);
+  if (returnRep) {
+    preferences.push('return=representation');
+  }
+  if (preferences.length) {
+    headers['Prefer'] = preferences.join('; ');
+  }
+  return fetch(buildEndpoint(endpoint, params), req);
 }
 
 export async function get(endpoint, params, single = false) {
@@ -47,4 +60,15 @@ export async function del(endpoint, params) {
       throw new Exception('Not found');
     }
   });
+}
+
+export async function patch(endpoint, params, data) {
+  const req = {
+    method: 'patch',
+    body: JSON.stringify(data),
+    headers: {
+      'Contenty-Type': 'application/json',
+    },
+  };
+  return fetch(buildEndpoint(endpoint, params), req);
 }
