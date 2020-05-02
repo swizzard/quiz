@@ -22,16 +22,16 @@ export default function HostGame({ game, user }) {
       .then((code) => {
         game.code = code;
         setCurrentGame(game);
-        setMaxRound(game.quiz.quiz_round.length);
+        setMaxRound(game.quiz.quizRound.length);
       })
-      .catch((e) => setError(e));
-  }, [currentGame]);
+      .catch((e) => setError(e.message));
+  }, [currentGame, game, user.id]);
 
   function updateParticipants() {
     setError(null);
     getParticipants(currentGame.code)
       .then((ps) => setParticipants(ps))
-      .catch((e) => setError(e));
+      .catch((e) => setError(e.message));
   }
 
   function Round({ roundNo, questions }) {
@@ -82,7 +82,7 @@ export default function HostGame({ game, user }) {
         </div>
         <Round
           roundNo={currentRound + 1}
-          questions={game.quiz.quiz_round[currentRound]}
+          questions={game.quiz.quizRound[currentRound]}
         />
         {currentRound >= maxRound ? null : (
           <button

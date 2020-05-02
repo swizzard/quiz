@@ -18,8 +18,8 @@ export default function HostDash({ setDashState, user }) {
         }
       })
       .then((games) => setGames(games))
-      .catch((e) => setError(e));
-  }, [games]);
+      .catch((e) => setError(e.message));
+  }, [user.id, games]);
 
   function removeGame({ id }) {
     return () => {

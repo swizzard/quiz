@@ -3,7 +3,7 @@ import { postAnswers } from './db/game';
 
 function newAnswers(game, { id }) {
   const anss = {};
-  game.quiz_round.forEach(({ answer: answers }) => {
+  game.quizRound.forEach(({ answer: answers }) => {
     answers.forEach(({ ansId }) => (anss[ansId] = ''));
   });
   return { playerId: id, answers: anss };
@@ -14,7 +14,7 @@ export default function PlayerGame({ game, user }) {
   const [answers, setAnswers] = useState(newAnswers(game, user));
   const [posted, setPosted] = useState(false);
   const [error, setError] = useState(null);
-  const finalRound = game.quiz_round.length - 1;
+  const finalRound = game.quizRound.length - 1;
 
   function setAnswer(ansId, response) {
     answers[ansId] = response;
@@ -67,7 +67,7 @@ export default function PlayerGame({ game, user }) {
       ) : (
         <div>
           <div>
-            {game.quiz_round[currentRound].map((question, ix) => (
+            {game.quizRound[currentRound].map((question, ix) => (
               <PlayerQuestion
                 question={question}
                 questionNo={ix}
@@ -77,12 +77,12 @@ export default function PlayerGame({ game, user }) {
           </div>
           <div>
             {currentRound < finalRound ? (
-              <button onClick={() => setCurrentRound(currentRound++)}>
+              <button onClick={() => setCurrentRound(currentRound + 1)}>
                 Next Round
               </button>
             ) : null}
             {currentRound > 1 ? (
-              <button onClick={() => setCurrentRound(currentRound--)}>
+              <button onClick={() => setCurrentRound(currentRound - 1)}>
                 Previous Round
               </button>
             ) : null}

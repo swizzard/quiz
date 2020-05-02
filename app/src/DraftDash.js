@@ -10,7 +10,7 @@ function newGame({ display_name, id }) {
       display_name,
       id,
     },
-    quiz_rounds: [],
+    quizRounds: [],
   };
 }
 
@@ -24,15 +24,29 @@ export default function DraftDash({ setDashState, user }) {
       .then((resp) => {
         if (resp.ok) {
           return resp.json();
+        } else if (resp.status === 406) {
+          return { games: [] };
         } else {
           throw new Error('There was a problem retrieving your games.');
         }
       })
-      .then((games) => setGames(games))
-      .catch((e) => setError(e));
-  }, [games]);
+      .then((games) => {
+        debugger;
+        setGames(
+          games.map(({ name, quizRounds }) => {
+            return {
+              name,
+              quizRounds: quizRounds.map(({ questions }) => questions),
+            };
+          }),
+        );
+      })
+      .catch((e) => {
+        setError(e.message);
+      });
+  }, [user.id]);
 
-  function removeGame({ id }) {
+  function removeGame(id) {
     return () => {
       deleteGame(user.id, id)
         .then(() => {
@@ -41,38 +55,42 @@ export default function DraftDash({ setDashState, user }) {
         .catch(() => setError('There was a problem deleting your game'));
     };
   }
-
-  return selectedGame ? (
-    <DraftGame
-      game={selectedGame}
-      user={user}
-      goBack={() => setSelectedGame(null)}
-    />
-  ) : (
-    <div>
-      {error ? <div>{error}</div> : null}
+  if (selectedGame) {
+    return (
+      <DraftGame
+        game={selectedGame}
+        user={user}
+        goBack={() => setSelectedGame(null)}
+      />
+    );
+  } else {
+    return (
       <div>
-        {games.length > 0 ? (
-          games.map((g) => (
-            <HostGameSummary
-              game={g}
-              select={setSelectedGame}
-              selectLabel="Edit Game"
-              remove={removeGame(g.id)}
-            />
-          ))
-        ) : (
-          <h4>No Games</h4>
-        )}
+        {error ? <div>{error}</div> : null}
+        <div>
+          {games && games.length > 0 ? (
+            games.map((g, ix) => (
+              <HostGameSummary
+                quiz={g}
+                select={setSelectedGame}
+                selectLabel="Edit Game"
+                remove={removeGame(g.id)}
+                key={`${user.id}-game-${ix}`}
+              />
+            ))
+          ) : (
+            <h4>No Games</h4>
+          )}
+        </div>
+        <div>
+          <button onClick={() => setSelectedGame(newGame(user))}>
+            Create Game
+          </button>
+        </div>
+        <div>
+          <button onClick={() => setDashState(null)}>Back</button>
+        </div>
       </div>
-      <div>
-        <button onClick={() => setSelectedGame(newGame(user))}>
-          Create Game
-        </button>
-      </div>
-      <div>
-        <button onClick={() => setDashState(null)}>Back</button>
-      </div>
-    </div>
-  );
+    );
+  }
 }

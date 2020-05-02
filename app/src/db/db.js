@@ -7,7 +7,12 @@ export const errors = {
 };
 
 function buildEndpoint(endpoint, params = {}) {
-  return `${API_URL}${endpoint}${stringify(params)}`;
+  const ep = `${API_URL}${endpoint}`;
+  const qs = stringify(params);
+  if (qs.length) {
+    return `${ep}?${qs}`;
+  }
+  return ep;
 }
 
 export async function post(

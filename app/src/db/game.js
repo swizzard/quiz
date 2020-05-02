@@ -1,65 +1,75 @@
 import { del, get, patch, post } from './db';
 
 export function postAnswers({ id }, answers) {
-  const ep = '/rpc/user_answers';
+  const ep = 'rpc/user_answers';
   const data = {
     userId: id,
     answers,
   };
-  return post(ep, data, true);
+  return post(ep, data, {}, true);
 }
 
 export function submitDraft({ id }, name, questions) {
-  const ep = '/rpc/draft_game';
+  const ep = 'rpc/draft_game';
   const data = {
     userId: id,
     name,
     questions,
   };
-  return post(ep, data, true);
+  return post(ep, data, {}, true);
+}
+
+export function updateDraft({ id: userId }, quizId, quizName, questions) {
+  const ep = 'rpc/update_game';
+  const data = {
+    userId,
+    quizId,
+    quizName,
+    questions,
+  };
+  return post(ep, data, {}, true);
 }
 
 export function deleteGame(userId, gameId) {
-  const ep = '/quiz';
+  const ep = 'quiz';
   const params = { id: `eq.${gameId}`, creator: `eq.${userId}` };
   return del(ep, params);
 }
 
 export function getHostGames(userId) {
-  const ep = '/game';
+  const ep = 'quiz';
   const params = {
-    'quiz.creator_id': `eq.${userId}`,
-    completed: 'is.false',
+    creator: `eq.${userId}`,
     select:
-      'code,quiz(name,quizRound:quiz_round(roundNo:round_no,questions:question(question,answers:answer(answer,points))))',
+      'quizId:id,quizName:name,quizRounds:quiz_round(roundNo:round_no,questions:question(questionId:id,question,answers:answer(answerId:id,answer,points)))',
   };
   return get(ep, params);
 }
 
 export function getGame(userId, code) {
-  const ep = '/game_participant';
+  const ep = 'game_participant';
   const params = {
     code,
     player_id: `eq.${userId}`,
     'game.completed': 'is.false',
 
     select:
-      'game(quiz(name,quizRound:quiz_round(questions:question(answer(id)))))',
+      'game(quiz(name,quizRounds:quiz_round(questions:question(answer(id)))))',
   };
   return get(ep, params);
 }
 
 export function createHostedGame(userId, gameId) {
-  const ep = '/rpc/host_game';
+  const ep = 'rpc/host_game';
   const data = {
     userId,
     gameId,
   };
-  return post(ep, data, true);
+  return post(ep, data, {}, true);
 }
 
 export function getParticipants(code) {
-  const ep = '/game_participant';
+  const ep = 'game_participant';
   const params = {
     'game.code': code,
     select: 'id,player(displayName:display_name)',
@@ -68,7 +78,7 @@ export function getParticipants(code) {
 }
 
 export function getParticipantAnswers({ id: gameId }) {
-  const ep = '/game_participant';
+  const ep = 'game_participant';
   const params = {
     game_id: `eq.${gameId}`,
     select:
@@ -81,7 +91,7 @@ export function getParticipantAnswers({ id: gameId }) {
 }
 
 export function submitScore(participantId, score) {
-  const ep = '/game_participant';
+  const ep = 'game_participant';
   const params = {
     id: `eq.${participantId}`,
   };

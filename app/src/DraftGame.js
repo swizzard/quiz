@@ -1,40 +1,43 @@
-import React, { useState } from 'react';
-import { submitDraft } from './db/game';
-
-function newQ() {
-  return {
-    question: '',
-    answers: [],
-  };
-}
-
-function Answer({ answer, thisQ, qIx, roundIx, ix, points, qs, setQs }) {
-  const id = `${roundIx}-${qIx}-${ix}`;
+import React, { useReducer, useState } from 'react';
+import { submitDraft, updateDraft } from './db/game';
+import { draftGameReducer, types } from './reducers';
+function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
+  const id = `${roundIx}-${qIx}-${answerIx}`;
   return (
-    <div key={id}>
+    <div>
       <div>
-        <label for={`${id}-answer`}>Answer: </label>
+        <label htmlFor={`${id}-answer`}>Answer: </label>
         <input
           type="text"
-          onChange={(e) => {
-            thisQ.answers[ix].answer = e.target.value;
-            qs[roundIx][qIx] = thisQ;
-            setQs(qs);
-          }}
+          onChange={(e) =>
+            dispatch({
+              type: types.CHANGE_ANSWER,
+              points,
+              answer: e.target.value,
+              roundIx,
+              qIx,
+              answerIx,
+            })
+          }
           placeholder="Answer"
           value={answer}
           id={`${id}-answer`}
         />
       </div>
       <div>
-        <label for={`${id}-points`}>Points: </label>
+        <label htmlFor={`${id}-points`}>Points: </label>
         <input
           type="number"
-          onChange={(e) => {
-            thisQ.answers[ix].points = e.target.value;
-            qs[roundIx][qIx] = thisQ;
-            setQs(qs);
-          }}
+          onChange={(e) =>
+            dispatch({
+              type: types.CHANGE_ANSWER,
+              points: e.target.value,
+              answer,
+              roundIx,
+              qIx,
+              answerIx,
+            })
+          }
           value={points}
           id={`${id}-points`}
         />
@@ -42,14 +45,7 @@ function Answer({ answer, thisQ, qIx, roundIx, ix, points, qs, setQs }) {
       <div>
         <button
           type="button"
-          onClick={() => {
-            const theseAnswers = thisQ.answers;
-            const intermed = theseAnswers.slice(0, ix);
-            intermed.push(...theseAnswers.slice(ix + 1));
-            thisQ.answers = theseAnswers;
-            qs[roundIx][qIx] = thisQ;
-            setQs(qs);
-          }}>
+          onClick={() => dispatch({ type: types.DELETE_ANSWER, roundIx, qIx })}>
           Remove Answer
         </button>
       </div>
@@ -57,104 +53,143 @@ function Answer({ answer, thisQ, qIx, roundIx, ix, points, qs, setQs }) {
   );
 }
 
-function Question({ roundIx, qIx, qs, setQs }) {
-  const thisQ = qs[roundIx][qIx] || newQ();
+function Question({ roundIx, qIx, q, dispatch }) {
   return (
-    <div key={`${roundIx}-${qIx}`}>
+    <div>
       <input
         type="text"
-        onChange={(e) => {
-          thisQ.question = e.target.value;
-          qs[roundIx][qIx] = thisQ;
-          setQs(qs);
-        }}
+        value={q.question}
+        onChange={(e) =>
+          dispatch({
+            type: types.CHANGE_QUESTION,
+            roundIx,
+            qIx,
+            question: e.target.value,
+          })
+        }
       />
-      {thisQ.answers.map(({ answer, points }, ix) => (
+      {q.answers.map(({ answer, points }, answerIx) => (
         <Answer
           answer={answer}
           roundIx={roundIx}
           qIx={qIx}
-          ix={ix}
+          answerIx={answerIx}
           points={points}
-          qs={qs}
-          setQs={setQs}
-          thisQ={thisQ}
+          dispatch={dispatch}
+          key={`${roundIx}-${qIx}-${answerIx}`}
         />
       ))}
       <button
         type="button"
-        onClick={() => {
-          thisQ.answers.push({ answer: '', points: 0 });
-          qs[roundIx][qIx] = thisQ;
-          setQs(qs);
-        }}>
+        onClick={() => dispatch({ type: types.ADD_ANSWER, roundIx, qIx })}>
         Add Answer
       </button>
       <button
         type="button"
-        onClick={() => {
-          const thisRound = qs[roundIx];
-          const intermed = thisRound.slice(0, qIx);
-          intermed.push(...thisRound.slice(qIx + 1));
-          qs[roundIx] = intermed;
-          setQs(qs);
-        }}>
+        onClick={() => dispatch({ type: types.DELETE_QUESTION, roundIx, qIx })}>
         Remove Question
       </button>
     </div>
   );
 }
 
-function Round({ ix, qs, setQs }) {
+function Round({ ix, questions, dispatch }) {
   return (
     <div>
       <div>
-        {qs.map((_, qix) => (
-          <Question roundIx={ix} qIx={qix} qs={qs} setQs={setQs} />
-        ))}
+        {questions.map((q, qIx) => {
+          return (
+            <Question
+              roundIx={ix}
+              qIx={qIx}
+              q={q}
+              dispatch={dispatch}
+              key={`${ix}-${qIx}`}
+            />
+          );
+        })}
       </div>
       <div>
         <button
           type="button"
           onClick={() => {
-            qs[ix].push(newQ);
-            setQs(qs);
+            dispatch({ type: types.ADD_QUESTION, roundIx: ix });
           }}>
           Add Question
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            dispatch({ types: types.DELETE_ROUND, roundIx: ix });
+          }}>
+          Remove Round
         </button>
       </div>
     </div>
   );
 }
 
-function postDraft(user, questions, name, goBack, setError) {
+function postDraft(user, id, questions, name, goBack, setError) {
   setError(null);
-  submitDraft(user, name, questions)
+  (id
+    ? updateDraft(user, id, name, questions)
+    : submitDraft(user, name, questions)
+  )
     .then(() => goBack())
-    .catch(() => {
-      setError('There was a problem submitting your game.');
-    });
+    .catch(setError('There was a problem submitting your game.'));
 }
 
 export default function DraftGame({ game, goBack, user }) {
   const [error, setError] = useState(null);
-  const [questions, setQuestions] = useState(game.quiz_rounds);
-  const [name, setName] = useState(game.name);
+  const [state, dispatch] = useReducer(draftGameReducer, game);
+
   return (
     <div>
-      {error ? <div>{error}</div> : null} }
-      <form onSubmit={() => postDraft(user, questions, name, goBack, setError)}>
+      {error ? <div>{error}</div> : null}
+      <form>
         <div>
-          <label for="quizName">Title</label>
-          <input id="quizName" onChange={(e) => setName(e.target.value)} />
+          <label htmlFor="quizName">Title</label>
+          <input
+            id="quizName"
+            value={game.name}
+            onChange={(e) =>
+              dispatch({ type: types.CHANGE_NAME, name: e.target.value })
+            }
+          />
         </div>
         <div>
-          {questions.map((_, ix) => (
-            <Round ix={ix} qs={questions} setQs={setQuestions} />
+          {state.quizRounds.map((_, ix) => (
+            <Round
+              ix={ix}
+              questions={state.quizRounds[ix]}
+              dispatch={dispatch}
+              key={`round-${ix}`}
+            />
           ))}
         </div>
         <div>
-          <button type="submit">Submit</button>
+          <button
+            type="button"
+            onClick={() => dispatch({ type: types.ADD_ROUND })}>
+            Add Round
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              postDraft(
+                user,
+                state.quizId,
+                state.quizRounds,
+                state.name,
+                goBack,
+                setError,
+              );
+            }}>
+            Submit
+          </button>
+          <button type="button" onClick={() => goBack()}>
+            Back
+          </button>
         </div>
       </form>
     </div>

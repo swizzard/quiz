@@ -105,3 +105,45 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
+
+CREATE OR REPLACE FUNCTION update_game(data json) RETURNS boolean AS $$
+DECLARE
+  questions json;
+  creator_id integer;
+  rnd json;
+  q_id integer;
+  qe_id integer;
+  ans_id integer;
+  q json;
+  a json;
+  q_name text;
+BEGIN
+  questions := data->'questions';
+  creator_id := (data->>'userId')::integer;
+  q_name := data->>'quizName';
+  q_id := (data->>'quizId')::integer;
+  UPDATE quiz SET quiz.name = q_name WHERE id = q_id AND creator = creator_id;
+  IF NOT FOUND THEN
+    RETURN false;
+  ELSE
+    FOREACH rnd IN ARRAY ARRAY(SELECT json_array_elements(questions)) LOOP
+      FOREACH q IN ARRAY ARRAY(SELECT json_array_elements(rnd)) LOOP
+        UPDATE question SET question = q->>'question'
+          FROM quiz_round qr
+          JOIN quiz q ON qr.quiz_id = q.id
+          WHERE question.id = (q->>'questionId')::integer
+          AND q.creator = creator_id;
+        FOREACH a IN ARRAY ARRAY(SELECT json_array_elements(q->'answers')) LOOP
+          UPDATE answer SET answer.answer = a->>'answer', answer.points = (a->>'points')::integer
+          FROM question qe
+          JOIN quiz_round qr ON qe.round_id = qr.id
+          JOIN quiz q ON qr.quiz_id = q.id
+          WHERE answer.id = (a->>'id')::integer
+          AND q.creator = creator_id;
+        END LOOP;
+      END LOOP;
+    END LOOP;
+    RETURN true;
+    END IF;
+  END;
+$$ LANGUAGE plpgsql VOLATILE;

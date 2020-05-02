@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { getIp, newUser } from './db/user';
 
-function SignIn({ setUser }) {
+export default function SignIn({ setUser }) {
   const [ip, setIp] = useState('');
   const [signIn, setSignIn] = useState(true);
   const [email, setEmail] = useState('');
@@ -54,7 +54,7 @@ function SignIn({ setUser }) {
             setError('Invalid email/password');
           }
         })
-        .catch((e) => setError(e));
+        .catch((e) => setError(e.message));
     }
   }
 
@@ -76,7 +76,7 @@ function SignIn({ setUser }) {
             setError('There was an error creating your account');
           }
         })
-        .catch((e) => setError(e));
+        .catch((e) => setError(e.message));
     }
   }
   return (
@@ -93,14 +93,15 @@ function SignIn({ setUser }) {
             type={showPassword ? 'text' : 'password'}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <a
+          <button
+            type="button"
             className="small"
             onClick={(e) => {
               e.preventDefault();
               setShowPassword(!showPassword);
             }}>
             {showPassword ? 'Hide' : 'Show'} Password
-          </a>
+          </button>
         </div>
         {signIn ? null : (
           <>
@@ -128,18 +129,16 @@ function SignIn({ setUser }) {
             }}>
             {signIn ? 'Sign In' : 'Sign Up'}
           </button>
-          <a
+          <button
             className="small"
             onClick={(e) => {
               e.preventDefault();
               setSignIn(!signIn);
             }}>
             Sign {signIn ? 'Up' : 'In'}
-          </a>
+          </button>
         </div>
       </form>
     </div>
   );
 }
-
-export default SignIn;

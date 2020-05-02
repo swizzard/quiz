@@ -65,7 +65,7 @@ export default function ScoreGame({ game }) {
       .then((ans) => {
         setAnswers(fmtAnswers(ans));
       })
-      .catch((e) => setError(e));
+      .catch((e) => setError(e.message));
   }
 
   function submitParticipantScore(participantId, displayName, score) {
@@ -80,7 +80,7 @@ export default function ScoreGame({ game }) {
           throw new Error('There was an error submitting the score.');
         }
       })
-      .catch((e) => setError(e));
+      .catch((e) => setError(e.message));
   }
 
   useEffect(getResponses, [answers]);

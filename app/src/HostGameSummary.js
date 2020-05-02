@@ -2,17 +2,16 @@ import React from 'react';
 
 function countQuestions(game) {
   let numQs = 0;
-  game.rounds.forEach((r) => (numQs += r.questions.length));
+  game.quizRounds.forEach((r) => (numQs += r.length));
   return numQs;
 }
-export default function HostGameSummary({ game, remove, select, selectLabel }) {
+export default function HostGameSummary({ quiz, remove, select, selectLabel }) {
   return (
     <div>
-      <h3>{game.quiz.name}</h3>
-      <p>Rounds: {game.quiz.quiz_round.length}</p>
-      <p>Questions: {countQuestions(game.quiz)}</p>
-      <p>Code: {game.code}</p>
-      <button onClick={() => select(game)}>{selectLabel}</button>
+      <h3>{quiz.name}</h3>
+      <p>Rounds: {quiz.quizRounds.length}</p>
+      <p>Questions: {countQuestions(quiz)}</p>
+      <button onClick={() => select(quiz)}>{selectLabel}</button>
       <button onClick={remove}>Delete</button>
     </div>
   );

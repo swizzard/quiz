@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS player (
   ipaddr inet NOT NULL,
   password TEXT NOT NULL,
   display_name VARCHAR(32) NOT NULL,
-  banned BOOLEAN NOT NULL DEFAULT false,
+  banned BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS quiz (
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS question (
   id SERIAL PRIMARY KEY,
   round_id INTEGER REFERENCES quiz_round(id),
   question TEXT,
-  question_no SMALLINT NOT NULL DEFAULT 1,
+  question_no SMALLINT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE IF NOT EXISTS answer (
@@ -56,3 +56,5 @@ CREATE TABLE IF NOT EXISTS participant_response (
   participant_id INTEGER REFERENCES game_participant(id),
   response TEXT
 );
+
+CREATE TYPE player_result AS (id integer, email VARCHAR(255), display_name VARCHAR(32));

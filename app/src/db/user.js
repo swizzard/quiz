@@ -13,7 +13,7 @@ export function newUser(email, password, displayName, ipaddr) {
 export function getUser(userId) {
   const params = {
     id: `eq.${userId}`,
-    select: 'display_name,email',
+    select: 'displayName:display_name,email',
   };
   return get('player', params);
 }
