@@ -32,7 +32,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 CREATE OR REPLACE FUNCTION delete_user(email VARCHAR(255), u_ipaddr inet) RETURNS boolean AS $$
 DECLARE u record;
 BEGIN
-  IF SELECT ip_banned(u_ipaddr) THEN
+  IF ip_banned(u_ipaddr) THEN
     RETURN false;
   ELSE
     SELECT p.* INTO u FROM player p WHERE p.email = email;
@@ -42,7 +42,8 @@ BEGIN
       DELETE FROM player p WHERE p.id = u.id;
       RETURN true;
     END IF;
-  END;
+  END IF;
+END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 CREATE OR REPLACE FUNCTION draft_game(data json) RETURNS integer AS $$
