@@ -1,6 +1,7 @@
-import React, { useReducer, useState } from 'react';
-import { submitDraft, updateDraft } from './db/game';
-import { draftGameReducer, types } from './reducers';
+import React, { useReducer, useState } from "react";
+import { submitDraft, updateDraft } from "./db/game";
+import { draftGameReducer, types } from "./reducers/draft";
+
 function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
   const id = `${roundIx}-${qIx}-${answerIx}`;
   return (
@@ -16,7 +17,7 @@ function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
               answer: e.target.value,
               roundIx,
               qIx,
-              answerIx,
+              answerIx
             })
           }
           placeholder="Answer"
@@ -35,7 +36,7 @@ function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
               answer,
               roundIx,
               qIx,
-              answerIx,
+              answerIx
             })
           }
           value={points}
@@ -43,9 +44,7 @@ function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
         />
       </div>
       <div>
-        <button
-          type="button"
-          onClick={() => dispatch({ type: types.DELETE_ANSWER, roundIx, qIx })}>
+        <button type="button" onClick={() => dispatch({ type: types.DELETE_ANSWER, roundIx, qIx, answerIx })}>
           Remove Answer
         </button>
       </div>
@@ -64,29 +63,17 @@ function Question({ roundIx, qIx, q, dispatch }) {
             type: types.CHANGE_QUESTION,
             roundIx,
             qIx,
-            question: e.target.value,
+            question: e.target.value
           })
         }
       />
       {q.answers.map(({ answer, points }, answerIx) => (
-        <Answer
-          answer={answer}
-          roundIx={roundIx}
-          qIx={qIx}
-          answerIx={answerIx}
-          points={points}
-          dispatch={dispatch}
-          key={`${roundIx}-${qIx}-${answerIx}`}
-        />
+        <Answer answer={answer} roundIx={roundIx} qIx={qIx} answerIx={answerIx} points={points} dispatch={dispatch} key={`${roundIx}-${qIx}-${answerIx}`} />
       ))}
-      <button
-        type="button"
-        onClick={() => dispatch({ type: types.ADD_ANSWER, roundIx, qIx })}>
+      <button type="button" onClick={() => dispatch({ type: types.ADD_ANSWER, roundIx, qIx })}>
         Add Answer
       </button>
-      <button
-        type="button"
-        onClick={() => dispatch({ type: types.DELETE_QUESTION, roundIx, qIx })}>
+      <button type="button" onClick={() => dispatch({ type: types.DELETE_QUESTION, roundIx, qIx })}>
         Remove Question
       </button>
     </div>
@@ -98,15 +85,7 @@ function Round({ ix, questions, dispatch }) {
     <div>
       <div>
         {questions.map((q, qIx) => {
-          return (
-            <Question
-              roundIx={ix}
-              qIx={qIx}
-              q={q}
-              dispatch={dispatch}
-              key={`${ix}-${qIx}`}
-            />
-          );
+          return <Question roundIx={ix} qIx={qIx} q={q} dispatch={dispatch} key={`${ix}-${qIx}`} />;
         })}
       </div>
       <div>
@@ -114,14 +93,16 @@ function Round({ ix, questions, dispatch }) {
           type="button"
           onClick={() => {
             dispatch({ type: types.ADD_QUESTION, roundIx: ix });
-          }}>
+          }}
+        >
           Add Question
         </button>
         <button
           type="button"
           onClick={() => {
             dispatch({ types: types.DELETE_ROUND, roundIx: ix });
-          }}>
+          }}
+        >
           Remove Round
         </button>
       </div>
@@ -131,12 +112,7 @@ function Round({ ix, questions, dispatch }) {
 
 function postDraft(user, id, questions, name, goBack, setError) {
   setError(null);
-  (id
-    ? updateDraft(user, id, name, questions)
-    : submitDraft(user, name, questions)
-  )
-    .then(() => goBack())
-    .catch(setError('There was a problem submitting your game.'));
+  (id ? updateDraft(user, id, name, questions) : submitDraft(user, name, questions)).then(() => goBack()).catch(setError("There was a problem submitting your game."));
 }
 
 export default function DraftGame({ game, goBack, user }) {
@@ -149,42 +125,23 @@ export default function DraftGame({ game, goBack, user }) {
       <form>
         <div>
           <label htmlFor="quizName">Title</label>
-          <input
-            id="quizName"
-            value={game.name}
-            onChange={(e) =>
-              dispatch({ type: types.CHANGE_NAME, name: e.target.value })
-            }
-          />
+          <input id="quizName" value={state.quizName} onChange={(e) => dispatch({ type: types.CHANGE_NAME, name: e.target.value })} />
         </div>
         <div>
           {state.quizRounds.map((_, ix) => (
-            <Round
-              ix={ix}
-              questions={state.quizRounds[ix]}
-              dispatch={dispatch}
-              key={`round-${ix}`}
-            />
+            <Round ix={ix} questions={state.quizRounds[ix].questions} dispatch={dispatch} key={`round-${ix}`} />
           ))}
         </div>
         <div>
-          <button
-            type="button"
-            onClick={() => dispatch({ type: types.ADD_ROUND })}>
+          <button type="button" onClick={() => dispatch({ type: types.ADD_ROUND })}>
             Add Round
           </button>
           <button
             type="button"
             onClick={() => {
-              postDraft(
-                user,
-                state.quizId,
-                state.quizRounds,
-                state.name,
-                goBack,
-                setError,
-              );
-            }}>
+              postDraft(user, state.quizId, state.quizRounds, state.quizName, goBack, setError);
+            }}
+          >
             Submit
           </button>
           <button type="button" onClick={() => goBack()}>

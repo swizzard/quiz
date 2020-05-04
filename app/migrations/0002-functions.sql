@@ -58,17 +58,19 @@ DECLARE
   rnd json;
   q json;
   a json;
+  q_no smallint;
 BEGIN
   questions := data->'questions';
   round_count := 0;
   INSERT INTO quiz (creator, name) VALUES ((data->>'userId')::integer, data->>'name') RETURNING id INTO q_id;
   FOREACH rnd IN ARRAY ARRAY(SELECT json_array_elements(questions)) LOOP
     INSERT INTO quiz_round (quiz_id, round_no) VALUES (q_id, round_count) RETURNING id INTO r_id;
-    FOREACH q IN ARRAY ARRAY(SELECT json_array_elements(rnd)) LOOP
-      INSERT INTO question (round_id, question) VALUES (r_id, q->>'question') RETURNING id INTO qe_id;
+    FOREACH q IN ARRAY ARRAY(SELECT json_array_elements(rnd->>'questions')) LOOP
+      INSERT INTO question (round_id, question, question_no) VALUES (r_id, q->>'question', q_no) RETURNING id INTO qe_id;
       FOREACH a IN ARRAY ARRAY(SELECT json_array_elements(q->'answers')) LOOP
         INSERT INTO answer (question_id, answer, points) VALUES (qe_id, a->>'answer', (a->>'points')::integer);
       END LOOP;
+      q_no := q_no + 1;
     END LOOP;
     round_count := round_count + 1;
   END LOOP;
@@ -96,8 +98,8 @@ DECLARE
   game_id integer;
   game_code uuid;
 BEGIN
-  user_id := data->>'user_id'::integer;
-  game_id := data->>'game_id'::integer;
+  user_id := (data->>'userId')::integer;
+  game_id := (data->>'gameId')::integer;
   IF EXISTS(SELECT 1 FROM quiz q WHERE q.id = game_id AND q.creator = user_id) THEN
     INSERT INTO game (quiz_id) VALUES (game_id) RETURNING code INTO game_code;
     RETURN game_code;
@@ -112,37 +114,61 @@ DECLARE
   questions json;
   creator_id integer;
   rnd json;
+  round_count integer;
+  rnd_id integer;
   q_id integer;
   qe_id integer;
+  qe_ix integer;
   ans_id integer;
+  ans_ix integer;
   q json;
   a json;
   q_name text;
+  q_no smallint;
 BEGIN
   questions := data->'questions';
   creator_id := (data->>'userId')::integer;
   q_name := data->>'quizName';
   q_id := (data->>'quizId')::integer;
-  UPDATE quiz SET quiz.name = q_name WHERE id = q_id AND creator = creator_id;
+  round_count := 0;
+  UPDATE quiz SET name = q_name WHERE id = q_id AND creator = creator_id;
   IF NOT FOUND THEN
     RETURN false;
   ELSE
     FOREACH rnd IN ARRAY ARRAY(SELECT json_array_elements(questions)) LOOP
-      FOREACH q IN ARRAY ARRAY(SELECT json_array_elements(rnd)) LOOP
-        UPDATE question SET question = q->>'question'
-          FROM quiz_round qr
-          JOIN quiz q ON qr.quiz_id = q.id
-          WHERE question.id = (q->>'questionId')::integer
-          AND q.creator = creator_id;
+      rnd_id := (rnd->>'roundId')::integer;
+      q_no := 1;
+      IF rnd_id IS NULL THEN
+        INSERT INTO quiz_round (quiz_id, round_no) VALUES (q_id, round_count) RETURNING id INTO rnd_id;
+      END IF;
+      FOREACH q IN ARRAY ARRAY(SELECT json_array_elements(rnd->'questions')) LOOP
+        qe_id := (q->>'questionId')::integer;
+        IF qe_id IS NULL THEN
+          INSERT INTO question (round_id, question, question_no) VALUES (rnd_id, q->>'question', q_no) RETURNING id INTO qe_id;
+        ELSE
+          UPDATE question SET question = q->>'question'
+            FROM quiz_round qr
+            JOIN quiz ON qr.quiz_id = quiz.id
+            WHERE question.id = qe_id
+            AND quiz.creator = creator_id;
+        END IF;
         FOREACH a IN ARRAY ARRAY(SELECT json_array_elements(q->'answers')) LOOP
-          UPDATE answer SET answer.answer = a->>'answer', answer.points = (a->>'points')::integer
-          FROM question qe
-          JOIN quiz_round qr ON qe.round_id = qr.id
-          JOIN quiz q ON qr.quiz_id = q.id
-          WHERE answer.id = (a->>'id')::integer
-          AND q.creator = creator_id;
+          ans_id := (a->>'answerId')::integer;
+          RAISE NOTICE 'answer id: %s', ans_id;
+          IF ans_id IS NULL THEN
+            INSERT INTO answer (question_id, answer, points) VALUES (qe_id, a->>'answer', (a->>'points')::integer);
+          ELSE
+            UPDATE answer SET answer = a->>'answer', points = (a->>'points')::integer
+            FROM question qe
+            JOIN quiz_round qr ON qe.round_id = qr.id
+            JOIN quiz ON qr.quiz_id = quiz.id
+            WHERE answer.id = ans_id
+            AND quiz.creator = creator_id;
+          END IF;
         END LOOP;
+        q_no := q_no + 1;
       END LOOP;
+      round_count := round_count + 1;
     END LOOP;
     RETURN true;
     END IF;

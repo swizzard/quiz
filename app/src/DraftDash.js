@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import DraftGame from './DraftGame';
-import { deleteGame, getHostGames } from './db/game';
-import HostGameSummary from './HostGameSummary';
+import React, { useEffect, useState } from "react";
+import DraftGame from "./DraftGame";
+import { deleteGame, getHostGames } from "./db/game";
+import HostGameSummary from "./HostGameSummary";
+import { filterOutBy } from "./utils";
 
 function newGame({ display_name, id }) {
   return {
-    name: '',
+    name: "",
     creator: {
       display_name,
-      id,
+      id
     },
-    quizRounds: [],
+    quizRounds: []
   };
 }
 
@@ -19,7 +20,7 @@ export default function DraftDash({ setDashState, user }) {
   const [games, setGames] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
 
-  useEffect(() => {
+  function getGames() {
     getHostGames(user.id)
       .then((resp) => {
         if (resp.ok) {
@@ -27,65 +28,45 @@ export default function DraftDash({ setDashState, user }) {
         } else if (resp.status === 406) {
           return { games: [] };
         } else {
-          throw new Error('There was a problem retrieving your games.');
+          throw new Error("There was a problem retrieving your games.");
         }
       })
       .then((games) => {
-        debugger;
-        setGames(
-          games.map(({ name, quizRounds }) => {
-            return {
-              name,
-              quizRounds: quizRounds.map(({ questions }) => questions),
-            };
-          }),
-        );
+        setGames(games);
       })
       .catch((e) => {
         setError(e.message);
       });
-  }, [user.id]);
+  }
+
+  useEffect(getGames, [user.id]);
 
   function removeGame(id) {
     return () => {
       deleteGame(user.id, id)
-        .then(() => {
-          setGames(games.filter((g) => g.id !== id));
+        .then((v) => {
+          setGames(filterOutBy(games, ({ id: gameId }) => gameId === v[0].id));
         })
-        .catch(() => setError('There was a problem deleting your game'));
+        .catch(() => {
+          setError("There was a problem deleting your game");
+        });
     };
   }
+
+  function back() {
+    setSelectedGame();
+    getGames();
+  }
+
   if (selectedGame) {
-    return (
-      <DraftGame
-        game={selectedGame}
-        user={user}
-        goBack={() => setSelectedGame(null)}
-      />
-    );
+    return <DraftGame game={selectedGame} user={user} goBack={back} />;
   } else {
     return (
       <div>
         {error ? <div>{error}</div> : null}
+        <div>{games && games.length > 0 ? games.map((g, ix) => <HostGameSummary quiz={g} select={setSelectedGame} selectLabel="Edit Game" remove={removeGame(g.quizId)} key={`${user.id}-game-${ix}`} />) : <h4>No Games</h4>}</div>
         <div>
-          {games && games.length > 0 ? (
-            games.map((g, ix) => (
-              <HostGameSummary
-                quiz={g}
-                select={setSelectedGame}
-                selectLabel="Edit Game"
-                remove={removeGame(g.id)}
-                key={`${user.id}-game-${ix}`}
-              />
-            ))
-          ) : (
-            <h4>No Games</h4>
-          )}
-        </div>
-        <div>
-          <button onClick={() => setSelectedGame(newGame(user))}>
-            Create Game
-          </button>
+          <button onClick={() => setSelectedGame(newGame(user))}>Create Game</button>
         </div>
         <div>
           <button onClick={() => setDashState(null)}>Back</button>

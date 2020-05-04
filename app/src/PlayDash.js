@@ -1,31 +1,35 @@
-import React, { useState } from 'react';
-import PlayerGame from './PlayerGame';
-import { getGame } from './db/game';
+import React, { useState } from "react";
+import PlayerGame from "./PlayerGame";
+import { joinGame } from "./db/game";
 
 export default function PlayDash({ setDashState, user }) {
+  const [participantId, setParticipantId] = useState(null);
   const [gameCode, setGameCode] = useState(null);
   const [game, setGame] = useState(null);
   const [error, setError] = useState(null);
 
   function loadGame() {
     if (gameCode) {
-      getGame(user.id, gameCode)
+      joinGame(user.id, gameCode)
         .then((resp) => {
           if (resp.ok) {
             return resp.json();
           } else {
-            throw new Error('There was an error loading your game');
+            throw new Error("There was an error loading your game");
           }
         })
-        .then((jsn) => setGame(jsn))
+        .then(([{ participantId: pId, game }]) => {
+          setGame(game.quiz);
+          setParticipantId(pId);
+        })
         .catch((e) => setError(e.message));
     } else {
-      setError('Missing game code');
+      setError("Missing game code");
     }
   }
 
   return game ? (
-    <PlayerGame game={game} user={user} />
+    <PlayerGame game={game} key={`${gameCode}-${participantId}`} participantId={participantId} />
   ) : (
     <div>
       {error ? <div>{error}</div> : null}

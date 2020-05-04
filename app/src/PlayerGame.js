@@ -1,30 +1,59 @@
-import React, { useState } from 'react';
-import { postAnswers } from './db/game';
+import React, { useState } from "react";
+import { postAnswers } from "./db/game";
 
-function newAnswers(game, { id }) {
+function newAnswers(game) {
   const anss = {};
-  game.quizRound.forEach(({ answer: answers }) => {
-    answers.forEach(({ ansId }) => (anss[ansId] = ''));
+  game.quizRounds.forEach(({ questions }) => {
+    questions.forEach(({ answers }) => {
+      answers.forEach(({ answerId }) => (anss[answerId] = ""));
+    });
   });
-  return { playerId: id, answers: anss };
+  return anss;
 }
 
-export default function PlayerGame({ game, user }) {
-  const [currentRound, setCurrentRound] = useState(1);
-  const [answers, setAnswers] = useState(newAnswers(game, user));
+function PlayerAnswer({ answers, answerId, setAnswer }) {
+  return (
+    <div>
+      <input
+        type="text"
+        placeholder="Your Answer"
+        onChange={(e) => {
+          setAnswer(answerId, e.target.value);
+        }}
+        value={answers[answerId]}
+      />
+    </div>
+  );
+}
+
+function PlayerQuestion({ question: { answers: anss }, questionNo, setAnswer, answers }) {
+  return (
+    <div>
+      <h3>{questionNo + 1}</h3>
+      {anss.map(({ answerId }) => (
+        <PlayerAnswer key={`${answerId}-answer`} answers={answers} answerId={answerId} setAnswer={setAnswer} />
+      ))}
+    </div>
+  );
+}
+
+export default function PlayerGame({ game, participantId }) {
+  const [currentRound, setCurrentRound] = useState(0);
+  const [answers, setAnswers] = useState(newAnswers(game));
   const [posted, setPosted] = useState(false);
   const [error, setError] = useState(null);
-  const finalRound = game.quizRound.length - 1;
+  const finalRound = game.quizRounds.length - 1;
 
   function setAnswer(ansId, response) {
-    answers[ansId] = response;
-    setAnswers(answers);
+    const as = { ...answers };
+    as[ansId] = response;
+    setAnswers(as);
   }
 
   function submitAnswers() {
     setError(null);
-    const errMessage = 'There was an error submitting your answers';
-    postAnswers(user, answers)
+    const errMessage = "There was an error submitting your answers";
+    postAnswers(participantId, answers)
       .then((resp) => {
         if (resp.ok) {
           setPosted(true);
@@ -33,25 +62,6 @@ export default function PlayerGame({ game, user }) {
         }
       })
       .catch(() => setError(errMessage));
-  }
-
-  function PlayerQuestion({ question: { answer: anss }, questionNo, roundNo }) {
-    return (
-      <div key={`${game.code}-${roundNo}-${questionNo}`}>
-        <h3>{questionNo}</h3>
-        {anss.map(({ id: ansId }) => (
-          <div key={`${ansId}`}>
-            <input
-              type="text"
-              placeholder="Your Answer"
-              onChange={(e) => {
-                setAnswer(ansId, e.target.value);
-              }}
-            />
-          </div>
-        ))}
-      </div>
-    );
   }
 
   return (
@@ -67,34 +77,19 @@ export default function PlayerGame({ game, user }) {
       ) : (
         <div>
           <div>
-            {game.quizRound[currentRound].map((question, ix) => (
-              <PlayerQuestion
-                question={question}
-                questionNo={ix}
-                roundNo={currentRound}
-              />
-            ))}
+            {game.quizRounds[currentRound].questions.map((question, ix) => {
+              return <PlayerQuestion key={`${currentRound}-question-${ix}`} question={question} questionNo={ix} setAnswer={setAnswer} answers={answers} />;
+            })}
           </div>
           <div>
-            {currentRound < finalRound ? (
-              <button onClick={() => setCurrentRound(currentRound + 1)}>
-                Next Round
-              </button>
-            ) : null}
-            {currentRound > 1 ? (
-              <button onClick={() => setCurrentRound(currentRound - 1)}>
-                Previous Round
-              </button>
-            ) : null}
+            {currentRound < finalRound ? <button onClick={() => setCurrentRound(currentRound + 1)}>Next Round</button> : null}
+            {currentRound > 0 ? <button onClick={() => setCurrentRound(currentRound - 1)}>Previous Round</button> : null}
           </div>
         </div>
       )}
-      {currentRound === finalRound ? (
+      {currentRound === finalRound && !posted ? (
         <div>
-          <button
-            onClick={() => submitAnswers(answers, user, setError, setPosted)}>
-            Submit Answers
-          </button>
+          <button onClick={() => submitAnswers()}>Submit Answers</button>
         </div>
       ) : null}
     </div>

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import HostGame from './HostGame';
-import { deleteGame, getHostGames } from './db/game';
-import HostGameSummary from './HostGameSummary';
+import React, { useEffect, useState } from "react";
+import HostGame from "./HostGame";
+import { deleteGame, getHostGames } from "./db/game";
+import HostGameSummary from "./HostGameSummary";
 
 export default function HostDash({ setDashState, user }) {
   const [error, setError] = useState(null);
@@ -14,12 +14,12 @@ export default function HostDash({ setDashState, user }) {
         if (resp.ok) {
           return resp.json();
         } else {
-          throw new Error('There was a problem retrieving your games');
+          throw new Error("There was a problem retrieving your games");
         }
       })
       .then((games) => setGames(games))
       .catch((e) => setError(e.message));
-  }, [user.id, games]);
+  }, [user.id]);
 
   function removeGame({ id }) {
     return () => {
@@ -27,7 +27,7 @@ export default function HostDash({ setDashState, user }) {
         .then(() => {
           setGames(games.filter((g) => g.id !== id));
         })
-        .catch(() => setError('There was a problem deleting your game'));
+        .catch(() => setError("There was a problem deleting your game"));
     };
   }
   return selectedGame ? (
@@ -35,20 +35,7 @@ export default function HostDash({ setDashState, user }) {
   ) : (
     <div>
       {error ? <div>{error}</div> : null}
-      <div>
-        {games.length > 0 ? (
-          games.map((g) => (
-            <HostGameSummary
-              game={g}
-              select={setSelectedGame}
-              remove={removeGame(g.id)}
-              selectLabel="Host Game"
-            />
-          ))
-        ) : (
-          <h4>No Games</h4>
-        )}
-      </div>
+      <div>{games ? games.map((g) => <HostGameSummary key={`${g.quizId}`} quiz={g} select={setSelectedGame} remove={removeGame(g.quizId)} selectLabel="Host Game" />) : <h4>No Games</h4>}</div>
       <div>
         <button onClick={() => setDashState(null)}>Back</button>
       </div>

@@ -1,9 +1,9 @@
-import { stringify } from 'query-string';
+import { stringify } from "query-string";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 export const errors = {
-  KEY_ERROR: 'key error',
+  KEY_ERROR: "key error"
 };
 
 function buildEndpoint(endpoint, params = {}) {
@@ -15,65 +15,67 @@ function buildEndpoint(endpoint, params = {}) {
   return ep;
 }
 
-export async function post(
-  endpoint,
-  data,
-  params = {},
-  single = false,
-  returnRep = false,
-) {
+export async function post(endpoint, data, params = {}, single = false, returnRep = false) {
   const req = {
-    method: 'post',
+    method: "post",
     body: JSON.stringify(data),
     headers: {
-      'Content-Type': 'application/json',
-    },
+      "Content-Type": "application/json"
+    }
   };
   const preferences = [];
   if (single) {
-    preferences.push('params=single-object');
+    preferences.push("params=single-object");
   }
   if (returnRep) {
-    preferences.push('return=representation');
+    preferences.push("return=representation");
   }
   if (preferences.length) {
-    req.headers['Prefer'] = preferences.join('; ');
+    req.headers["Prefer"] = preferences.join("; ");
   }
   return fetch(buildEndpoint(endpoint, params), req);
 }
 
 export async function get(endpoint, params, single = false) {
   const req = {
-    method: 'GET',
+    method: "GET"
   };
   if (single) {
-    req.headers = { Accept: 'application/vnd.pgrst.object+json' };
+    req.headers = { Accept: "application/vnd.pgrst.object+json" };
   }
   return fetch(buildEndpoint(endpoint, params), req);
 }
 
 export async function del(endpoint, params) {
-  params.select = 'id';
+  params.select = "id";
   const req = {
-    method: 'DELETE',
-    headers: { Prefer: 'return=representation' },
+    method: "DELETE",
+    headers: { Prefer: "return=representation" }
   };
-  return fetch(buildEndpoint(endpoint, params), req).then((rows) => {
-    if (rows.length) {
-      return rows;
-    } else {
-      throw new Error('Not found');
-    }
-  });
+  return fetch(buildEndpoint(endpoint, params), req)
+    .then((rows) => {
+      if (rows.ok) {
+        return rows.json();
+      } else {
+        throw new Error("Error deleting");
+      }
+    })
+    .then((v) => {
+      if (v.length) {
+        return v;
+      } else {
+        throw new Error("Not found");
+      }
+    });
 }
 
 export async function patch(endpoint, params, data) {
   const req = {
-    method: 'patch',
+    method: "patch",
     body: JSON.stringify(data),
     headers: {
-      'Contenty-Type': 'application/json',
-    },
+      "Contenty-Type": "application/json"
+    }
   };
   return fetch(buildEndpoint(endpoint, params), req);
 }
