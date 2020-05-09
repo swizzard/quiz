@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import SignIn from './SignIn';
-import DashboardPicker from './Dashboard';
-import { retrieveUser, storeUser } from './store-user';
+import React, { useState } from "react";
+import SignIn from "./SignIn";
+import DashboardPicker from "./Dashboard";
+import { retrieveUser, storeUser } from "./store-user";
 
 function App() {
   const [user, setUser] = useState(retrieveUser());
@@ -10,7 +10,12 @@ function App() {
     storeUser(u);
     setUser(u);
   }
-  return user ? <DashboardPicker user={user} /> : <SignIn setUser={su} />;
+  function signOut() {
+    storeUser(null);
+    setUser(null);
+  }
+
+  return user ? <DashboardPicker user={user} signOut={signOut} /> : <SignIn setUser={su} />;
 }
 
 export default App;

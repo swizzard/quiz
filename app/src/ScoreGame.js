@@ -1,14 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { getParticipantAnswers, submitScore } from "./db/game";
+import _ from "lodash";
+import { getParticipants, getParticipantAnswers, submitScore } from "./db/game";
 
-export default function ScoreGame({ game }) {
+export default function ScoreGame({ code }) {
   const [error, setError] = useState(null);
   const [answers, setAnswers] = useState(null);
   const [currentParticipant, setCurrentParticipant] = useState(0);
   const [participantScores, setParticipantScores] = useState([]);
 
   function getResponses() {
-    getParticipantAnswers(game.code)
+    let playerIds;
+    getParticipants(code)
+      .then((resp) => {
+        if (resp.ok) {
+          return resp.json();
+        } else {
+          throw new Error(resp.statusText);
+        }
+      })
+      .then(({ participants }) => participants.map((p) => p.playerId))
+      .then((pids) => {
+        playerIds = pids;
+        return getParticipantAnswers(pids);
+      })
       .then((resp) => {
         if (resp.ok) {
           return resp.json();
@@ -16,13 +30,11 @@ export default function ScoreGame({ game }) {
           throw new Error("There was a problem retrieving participants' answers.");
         }
       })
-      .then(([{ participants }]) => {
-        setAnswers(fmtAnswers(participants));
-      });
-    // .catch((e) => setError(e.message));
+      .then((participants) => setAnswers(fmtAnswers(playerIds, participants)))
+      .catch((e) => setError(e.message));
   }
 
-  useEffect(getResponses, [answers]);
+  useEffect(getResponses, [code]);
 
   function submitParticipantScore(participantId, displayName, score) {
     submitScore(participantId, score)
@@ -41,7 +53,7 @@ export default function ScoreGame({ game }) {
     return <Loading error={error} />;
   }
   if (currentParticipant < answers.length) {
-    return <Scoring answers={answers} currentParticipant={currentParticipant} error={error} submitParticpantScore={submitParticipantScore} />;
+    return <Scoring answers={answers} currentParticipant={currentParticipant} error={error} submitParticipantScore={submitParticipantScore} />;
   }
   return <Results participantScores={participantScores} />;
 }
@@ -62,8 +74,8 @@ function Results({ participantScores }) {
           {doSort(participantScores).map(({ rank, score, displayName }) => (
             <tr>
               <td>{rank}</td>
-              <td>{score}</td>
               <td>{displayName}</td>
+              <td>{score}</td>
             </tr>
           ))}
         </tbody>
@@ -73,10 +85,10 @@ function Results({ participantScores }) {
 }
 
 function Scoring({ answers, currentParticipant, error, submitParticipantScore }) {
-  const [currentRound, setCurrentRound] = useState(1);
+  const [currentRound, setCurrentRound] = useState(0);
   const [currentScore, setCurrentScore] = useState({});
   function updateScore(answerId, val) {
-    setCurrentScore({ ...currentScore, [answerId]: val });
+    setCurrentScore({ ...currentScore, [answerId]: parseInt(val) });
   }
   return (
     <div>
@@ -86,13 +98,13 @@ function Scoring({ answers, currentParticipant, error, submitParticipantScore })
           <h2>Team: {answers[currentParticipant].displayName}</h2>
           <h3>Round {currentRound}</h3>
           <div>
-            {answers[currentParticipant].responses[currentRound].map(({ question: { question, questionId }, answers: responses }) => {
-              return <ScoringQuestion key={questionId} question={question} responses={responses} updateScore={updateScore} />;
-            })}
+            {answers[currentParticipant].rounds[currentRound].questions.map(({ question, answers }, ix) => (
+              <ScoringQuestion key={`${currentRound}-${ix}`} question={question} responses={answers} updateScore={updateScore} currentScore={currentScore} />
+            ))}
           </div>
         </div>
         <div>
-          {currentRound < answers[currentParticipant].responses.length - 1 ? (
+          {currentRound < answers[currentParticipant].rounds.length - 1 ? (
             <button type="button" onClick={() => setCurrentRound(currentRound + 1)}>
               Next Round
             </button>
@@ -102,7 +114,7 @@ function Scoring({ answers, currentParticipant, error, submitParticipantScore })
               Previous Round
             </button>
           ) : null}
-          {currentRound === answers[currentParticipant].responses.length - 1 && currentParticipant < answers.length - 1 ? (
+          {currentRound === answers[currentParticipant].rounds.length - 1 && currentParticipant <= answers.length - 1 ? (
             <button
               type="button"
               onClick={() => {
@@ -127,18 +139,19 @@ function Loading({ error }) {
   );
 }
 
-function ScoringQuestion({ question, responses, updateScore }) {
+function ScoringQuestion({ question, responses, updateScore, currentScore }) {
   return (
     <div>
       <h4>{question}</h4>
-      {Object.values(responses).map(({ answer, answerId, points, response }) => (
-        <ScoringAnswer answer={answer} answerId={answerId} points={points} response={response} setCurrentScore={updateScore} key={answerId} />
+      {responses.map(({ answer, answerId, points, response }) => (
+        <ScoringAnswer answer={answer} answerId={answerId} points={points} response={response} updateScore={updateScore} currentScore={currentScore[answerId]} key={answerId} />
       ))}
     </div>
   );
 }
 
-function ScoringAnswer({ answer, answerId, points, response, updateScore }) {
+function ScoringAnswer({ answer, answerId, points, response, updateScore, currentScore }) {
+  const [score, setScore] = useState(currentScore || 0);
   return (
     <div>
       <div>
@@ -153,10 +166,12 @@ function ScoringAnswer({ answer, answerId, points, response, updateScore }) {
         <label htmlFor={`points-${answerId}`}>Points:</label>
         <input
           type="number"
-          placeholder="0"
+          placeholder={score}
           id={`points-${answerId}`}
           onChange={(e) => {
-            updateScore(answerId, e.target.value);
+            const v = e.target.value;
+            setScore(v);
+            updateScore(answerId, v);
           }}
         />
         <label htmlFor={`answerPoints-${answerId}`}>Points for a correct answer:</label>
@@ -166,22 +181,18 @@ function ScoringAnswer({ answer, answerId, points, response, updateScore }) {
   );
 }
 
-function fmtAnswers(ps) {
-  const resps = ps.reduce((acc, { id, responses: resps }) => {
-    acc.push({
-      id,
-      responses: resps.reduce((acc, { answer: { answer, answerId, points, question: { questionId, questionNo, question, round: { roundNo } } }, response }) => {
-        const currRound = acc[roundNo] || [];
-        const currQ = currRound[questionNo] || { questionId, question, answers: {} };
-        currQ.answers[answerId] = { answerId, answer, response, points };
-        currRound[questionNo] = currQ;
-        acc[roundNo] = currRound;
-        return acc;
-      }, {})
-    });
-    return acc;
-  }, []);
-  return resps;
+function fmtAnswers(playerIds, responses) {
+  return _.zip(playerIds, responses).map(([pid, { game: { quiz: { quizRound } }, player: { displayName }, responses }]) => ({
+    participantId: pid,
+    displayName,
+    rounds: quizRound.map(({ questions, roundNo }) => ({
+      roundNo,
+      questions: questions.map(({ question, answers }) => ({
+        question,
+        answers: answers.map(({ answer, answerId, points }) => ({ answer, answerId, points, response: _.find(responses, (r) => r.answerId).response }))
+      }))
+    }))
+  }));
 }
 
 function doSort(ps) {

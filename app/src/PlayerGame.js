@@ -29,7 +29,7 @@ function PlayerAnswer({ answers, answerId, setAnswer }) {
 function PlayerQuestion({ question: { answers: anss }, questionNo, setAnswer, answers }) {
   return (
     <div>
-      <h3>{questionNo + 1}</h3>
+      <h3>Question {questionNo + 1}</h3>
       {anss.map(({ answerId }) => (
         <PlayerAnswer key={`${answerId}-answer`} answers={answers} answerId={answerId} setAnswer={setAnswer} />
       ))}

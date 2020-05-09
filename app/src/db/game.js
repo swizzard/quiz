@@ -89,18 +89,16 @@ export function getParticipants(code) {
   const ep = "game";
   const params = {
     code: `eq.${code}`,
-    select: "participants:game_participant(player(displayName:display_name))"
+    select: "participants:game_participant(playerId:id,player(displayName:display_name))"
   };
   return get(ep, params, true);
 }
 
-export function getParticipantAnswers(code) {
-  const ep = "game";
+export function getParticipantAnswers(participantIds) {
+  const ep = "game_participant";
   const params = {
-    code: `eq.${code}`,
-    select: "participants:game_participant(id,responses:participant_response(response,answer(answerId:id,points,answer,question(questionId:id,questionNo:question_no,question,round(roundNo:round_no)))))",
-    "round.order": "round_no.asc",
-    "question.order": "question_no.asc"
+    id: `in.(${participantIds.join(",")})`,
+    select: "player(displayName:display_name),responses:participant_response(answerId:answer_id,response),game(quiz(quizRound:quiz_round(roundNo:round_no,questions:question(questionNo:question_no,question,answers:answer(answerId:id,answer,points)))))"
   };
   return get(ep, params);
 }

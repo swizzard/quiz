@@ -71,10 +71,10 @@ export async function del(endpoint, params) {
 
 export async function patch(endpoint, params, data) {
   const req = {
-    method: "patch",
+    method: "PATCH",
     body: JSON.stringify(data),
     headers: {
-      "Contenty-Type": "application/json"
+      "Content-Type": "application/json"
     }
   };
   return fetch(buildEndpoint(endpoint, params), req);

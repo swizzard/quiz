@@ -47,23 +47,51 @@ export default function HostGame({ game, user }) {
     return (
       <div>
         <h5>Round: {roundNo + 1}</h5>
-        {questions.map(({ question }) => (
-          <HostQuestion question={question} />
+        {questions.map(({ question }, ix) => (
+          <HostQuestion key={`question-${roundNo}-${ix}`} question={question} ix={ix} />
         ))}
       </div>
     );
   }
 
-  function HostQuestion({ question }) {
+  function HostQuestion({ question, ix }) {
     return (
       <div>
-        <h5>{question}</h5>
+        <p>
+          <b>{`${ix + 1}.`}</b>
+          {`${question}`}
+        </p>
+      </div>
+    );
+  }
+
+  function CopyCodeButton({ code }) {
+    const [copied, setCopied] = useState(false);
+    const [err, setErr] = useState(false);
+    const copyCode = () =>
+      navigator.clipboard
+        .writeText(code)
+        .then(() => setCopied(true))
+        .catch(() => setErr(true));
+    return (
+      <div>
+        <h4>Code: {code}</h4>
+        <p>Send this code to your players so they can join the game!</p>
+        {!copied && !err ? (
+          <button type="button" onClick={copyCode}>
+            Copy
+          </button>
+        ) : copied ? (
+          <span class="small">Copied!</span>
+        ) : (
+          <span>An error occurred&mdash;please copy the code manually.</span>
+        )}
       </div>
     );
   }
 
   if (score) {
-    return <ScoreGame game={game} user={user} />;
+    return <ScoreGame code={game.code} />;
   } else if (!game) {
     return (
       <div>
@@ -76,7 +104,7 @@ export default function HostGame({ game, user }) {
         {error ? <div>{error}</div> : null}
         <div>
           <h3>{game.quizName}</h3>
-          <h4>Code: {game.code}</h4>
+          <CopyCodeButton code={game.code} />
         </div>
         <div>
           <h4>Participants</h4>
