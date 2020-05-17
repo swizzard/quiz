@@ -14,7 +14,7 @@ export function filterBy(arr, pred) {
       acc.push(v);
     }
     return acc;
-  });
+  }, []);
 }
 
 export function filterOutBy(arr, pred) {

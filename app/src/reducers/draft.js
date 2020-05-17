@@ -20,7 +20,7 @@ export function draftGameReducer(state, action) {
     case CHANGE_ANSWER:
       return deepSet(state, { points: action.points, answer: action.answer }, ["quizRounds", action.roundIx, "questions", action.qIx, "answers", action.answerIx]);
     case DELETE_ANSWER:
-      return deepSet(state, removeAt(state.quizRounds[action.roundIx].questions[action.qIx].answers, action.answerIx), ["quizRounds", action.roundIx, action.qIx, "answers"]);
+      return deepSet(state, removeAt(state.quizRounds[action.roundIx].questions[action.qIx].answers, action.answerIx), ["quizRounds", action.roundIx, "questions", action.qIx, "answers"]);
     case ADD_ROUND:
       return deepSet(state, [...state.quizRounds, { questions: [] }], "quizRounds");
     case DELETE_ROUND:
@@ -37,7 +37,7 @@ export function draftGameReducer(state, action) {
         ["quizRounds", action.roundIx, "questions", action.qIx]
       );
     case DELETE_QUESTION:
-      return deepSet(state, removeAt(state.quizRounds[action.roundIx].questions, action.qIx), ["quizRounds", action.roundIx]);
+      return deepSet(state, removeAt(state.quizRounds[action.roundIx].questions, action.qIx), ["quizRounds", action.roundIx, "questions"]);
     case CHANGE_NAME:
       return deepSet(state, action.name, "quizName");
     default:
