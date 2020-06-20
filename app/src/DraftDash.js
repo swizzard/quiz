@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
-import DraftGame from "./DraftGame";
-import { deleteGame, getHostGames } from "./db/game";
-import HostGameSummary from "./HostGameSummary";
-import { filterOutBy } from "./utils";
+import React, { useEffect, useState } from 'react';
+import DraftGame from './DraftGame';
+import { deleteGame, getHostGames } from './db/game';
+import HostGameSummary from './HostGameSummary';
+import { filterOutBy } from './utils';
 
 function newGame({ display_name, id }) {
   return {
-    name: "",
+    name: '',
     creator: {
       display_name,
       id
@@ -28,7 +28,7 @@ export default function DraftDash({ setDashState, user }) {
         } else if (resp.status === 406) {
           return { games: [] };
         } else {
-          throw new Error("There was a problem retrieving your games.");
+          throw new Error('There was a problem retrieving your games.');
         }
       })
       .then((games) => {
@@ -48,7 +48,7 @@ export default function DraftDash({ setDashState, user }) {
           setGames(filterOutBy(games, ({ id: gameId }) => gameId === v[0].id));
         })
         .catch(() => {
-          setError("There was a problem deleting your game");
+          setError('There was a problem deleting your game');
         });
     };
   }
@@ -62,16 +62,46 @@ export default function DraftDash({ setDashState, user }) {
     return <DraftGame game={selectedGame} user={user} goBack={back} />;
   } else {
     return (
-      <div>
-        {error ? <div>{error}</div> : null}
-        <div>{games && games.length > 0 ? games.map((g, ix) => <HostGameSummary quiz={g} select={setSelectedGame} selectLabel="Edit Game" remove={removeGame(g.quizId)} key={`${user.id}-game-${ix}`} />) : <h4>No Games</h4>}</div>
-        <div>
-          <button onClick={() => setSelectedGame(newGame(user))}>Create Game</button>
+      <>
+        {error ? (
+          <div className="row">
+            <div className="bg-error">{error}</div>
+          </div>
+        ) : null}
+        <>
+          {games && games.length > 0 ? (
+            games.map((g, ix) => (
+              <HostGameSummary
+                quiz={g}
+                select={setSelectedGame}
+                selectLabel="Edit Game"
+                remove={removeGame(g.quizId)}
+                key={`${user.id}-game-${ix}`}
+              />
+            ))
+          ) : (
+            <h4>No Games</h4>
+          )}
+        </>
+        <div className="row" style={{ marginTop: 10 }}>
+          <div className="col-sm-12">
+            <div className="btn-group">
+              <button
+                className="btn btn-dark"
+                onClick={() => setSelectedGame(newGame(user))}
+              >
+                Create Game
+              </button>
+              <button
+                className="btn btn-dark"
+                onClick={() => setDashState(null)}
+              >
+                Back
+              </button>
+            </div>
+          </div>
         </div>
-        <div>
-          <button onClick={() => setDashState(null)}>Back</button>
-        </div>
-      </div>
+      </>
     );
   }
 }

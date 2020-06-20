@@ -80,63 +80,96 @@ export default function SignIn({ setUser }) {
     }
   }
   return (
-    <div>
-      {error ? <div>{error}</div> : null}
-      <form>
-        <div>
-          <label>Email</label>
-          <input type="text" onChange={(e) => setEmail(e.target.value)} />
+    <div class="container">
+      {error ? (
+        <div className="row">
+          <div className="bg-danger">{error}</div>
         </div>
-        <div>
-          <label>Password</label>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            type="button"
-            className="small"
-            onClick={(e) => {
-              e.preventDefault();
-              setShowPassword(!showPassword);
-            }}>
-            {showPassword ? 'Hide' : 'Show'} Password
-          </button>
+      ) : null}
+      <form>
+        <div className="form-group row">
+          <label className="col-sm-3 col-form-label">Email</label>
+          <div className="col-sm-9">
+            <input
+              type="text"
+              className="form-control"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="form-group row">
+          <label className="col-sm-3 col-form-label">Password</label>
+          <div className="col-sm-6">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              className="form-control"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div className="col-sm-3">
+            <button
+              type="button"
+              className="btn btn-dark btn-sm"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowPassword(!showPassword);
+              }}
+            >
+              {showPassword ? 'Hide' : 'Show'} Password
+            </button>
+          </div>
         </div>
         {signIn ? null : (
           <>
-            <div>
-              <label>Confirm Password</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                onChange={(e) => setConfPassword(e.target.value)}
-              />
+            <div className="form-group row">
+              <label className="col-sm-3 col-form-label">
+                Confirm Password
+              </label>
+              <div class="col-sm-9">
+                <input
+                  className="form-control"
+                  type={showPassword ? 'text' : 'password'}
+                  onChange={(e) => setConfPassword(e.target.value)}
+                />
+              </div>
             </div>
-            <div>
-              <label>Display Name</label>
-              <input
-                type="text"
-                onChange={(e) => setDisplayName(e.target.value)}
-              />
+            <div className="form-group row">
+              <label className="col-sm-3 col-form-label">Display Name</label>
+              <div className="col-sm-9">
+                <input
+                  className="form-control"
+                  type="text"
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+              </div>
             </div>
           </>
         )}
-        <div>
-          <button
-            type="button"
-            onClick={() => {
-              signIn ? doSignIn() : doSignUp();
-            }}>
-            {signIn ? 'Sign In' : 'Sign Up'}
-          </button>
-          <button
-            className="small"
-            onClick={(e) => {
-              e.preventDefault();
-              setSignIn(!signIn);
-            }}>
-            Sign {signIn ? 'Up' : 'In'}
-          </button>
+        <div className="form-group row">
+          <div className="col-sm-12">
+            <button
+              className="btn btn-dark"
+              type="button"
+              onClick={() => {
+                signIn ? doSignIn() : doSignUp();
+              }}
+            >
+              {signIn ? 'Sign In' : 'Sign Up'}
+            </button>
+          </div>
+        </div>
+        <div className="form-group row">
+          <div className="col-sm-12">
+            <button
+              className="btn btn-dark btn-sm"
+              onClick={(e) => {
+                e.preventDefault();
+                setSignIn(!signIn);
+              }}
+            >
+              Sign {signIn ? 'Up' : 'In'}
+            </button>
+          </div>
         </div>
       </form>
     </div>

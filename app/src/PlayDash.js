@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import PlayerGame from "./PlayerGame";
-import { joinGame } from "./db/game";
+import React, { useState } from 'react';
+import PlayerGame from './PlayerGame';
+import { joinGame } from './db/game';
 
 export default function PlayDash({ setDashState, user }) {
   const [participantId, setParticipantId] = useState(null);
@@ -15,7 +15,7 @@ export default function PlayDash({ setDashState, user }) {
           if (resp.ok) {
             return resp.json();
           } else {
-            throw new Error("There was an error loading your game");
+            throw new Error('There was an error loading your game');
           }
         })
         .then(([{ participantId: pId, game }]) => {
@@ -24,19 +24,24 @@ export default function PlayDash({ setDashState, user }) {
         })
         .catch((e) => setError(e.message));
     } else {
-      setError("Missing game code");
+      setError('Missing game code');
     }
   }
 
   return game ? (
-    <PlayerGame game={game} key={`${gameCode}-${participantId}`} participantId={participantId} />
+    <PlayerGame
+      game={game}
+      key={`${gameCode}-${participantId}`}
+      participantId={participantId}
+    />
   ) : (
-    <div>
-      {error ? <div>{error}</div> : null}
+    <>
+      {error ? <div className="bg-danger">{error}</div> : null}
       <form>
-        <div>
+        <div className="form-group">
           <label>Game Code</label>
           <input
+            className="form-control"
             type="text"
             onChange={(e) => {
               setError(null);
@@ -45,16 +50,24 @@ export default function PlayDash({ setDashState, user }) {
           />
         </div>
         <div>
-          <button type="button" onClick={() => loadGame()}>
+          <button
+            className="btn btn-dark"
+            type="button"
+            onClick={() => loadGame()}
+          >
             Play
           </button>
         </div>
       </form>
       <div>
-        <button type="button" onClick={() => setDashState(null)}>
+        <button
+          className="btn btn-dark btn-sm"
+          type="button"
+          onClick={() => setDashState(null)}
+        >
           Back
         </button>
       </div>
-    </div>
+    </>
   );
 }

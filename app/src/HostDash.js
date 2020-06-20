@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import HostGame from "./HostGame";
-import { deleteGame, getHostGames } from "./db/game";
-import HostGameSummary from "./HostGameSummary";
+import React, { useEffect, useState } from 'react';
+import HostGame from './HostGame';
+import { deleteGame, getHostGames } from './db/game';
+import HostGameSummary from './HostGameSummary';
 
 export default function HostDash({ setDashState, user }) {
   const [error, setError] = useState(null);
@@ -14,7 +14,7 @@ export default function HostDash({ setDashState, user }) {
         if (resp.ok) {
           return resp.json();
         } else {
-          throw new Error("There was a problem retrieving your games");
+          throw new Error('There was a problem retrieving your games');
         }
       })
       .then((games) => setGames(games))
@@ -27,18 +27,43 @@ export default function HostDash({ setDashState, user }) {
         .then(() => {
           setGames(games.filter((g) => g.id !== id));
         })
-        .catch(() => setError("There was a problem deleting your game"));
+        .catch(() => setError('There was a problem deleting your game'));
     };
   }
   return selectedGame ? (
     <HostGame game={selectedGame} user={user} />
   ) : (
-    <div>
-      {error ? <div>{error}</div> : null}
-      <div>{games ? games.map((g) => <HostGameSummary key={`${g.quizId}`} quiz={g} select={setSelectedGame} remove={removeGame(g.quizId)} selectLabel="Host Game" />) : <h4>No Games</h4>}</div>
-      <div>
-        <button onClick={() => setDashState(null)}>Back</button>
+    <>
+      {error ? (
+        <div className="row">
+          <div className="col-sm-12 bg-error">{error}</div>
+        </div>
+      ) : null}
+      <>
+        {games ? (
+          games.map((g) => (
+            <HostGameSummary
+              key={`${g.quizId}`}
+              quiz={g}
+              select={setSelectedGame}
+              remove={removeGame(g.quizId)}
+              selectLabel="Host Game"
+            />
+          ))
+        ) : (
+          <h4>No Games</h4>
+        )}
+      </>
+      <div className="row">
+        <div className="col-sm-12 button-row">
+          <button
+            className="btn btn-dark btn-sm"
+            onClick={() => setDashState(null)}
+          >
+            Back
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
