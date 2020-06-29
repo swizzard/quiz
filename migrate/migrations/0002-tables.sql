@@ -1,6 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-DROP SCHEMA IF EXISTS api;
+DROP SCHEMA IF EXISTS api CASCADE;
+CREATE SCHEMA api;
 
 CREATE TABLE IF NOT EXISTS api.player (
   id SERIAL PRIMARY KEY,
@@ -53,7 +54,7 @@ CREATE TABLE IF NOT EXISTS api.game_participant (
   score INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE IF NOT EXISTS participant_response (
+CREATE TABLE IF NOT EXISTS api.participant_response (
   id SERIAL PRIMARY KEY,
   answer_id INTEGER REFERENCES api.answer(id) ON DELETE CASCADE,
   participant_id INTEGER REFERENCES api.game_participant(id) ON DELETE CASCADE,
@@ -62,6 +63,9 @@ CREATE TABLE IF NOT EXISTS participant_response (
 
 CREATE TYPE api.player_result AS (id integer, email VARCHAR(255), display_name VARCHAR(32));
 
-CREATE TABLE IF NOT EXISTS public.jwt_secret (
+DROP SCHEMA IF EXISTS secret CASCADE;
+CREATE SCHEMA secret;
+
+CREATE TABLE IF NOT EXISTS secret.jwt_secret (
   secret TEXT
 );

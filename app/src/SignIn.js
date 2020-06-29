@@ -80,7 +80,7 @@ export default function SignIn({ setUser }) {
     }
   }
   return (
-    <div class="container">
+    <div className="container">
       {error ? (
         <div className="row">
           <div className="bg-danger">{error}</div>
@@ -125,7 +125,7 @@ export default function SignIn({ setUser }) {
               <label className="col-sm-3 col-form-label">
                 Confirm Password
               </label>
-              <div class="col-sm-9">
+              <div className="col-sm-9">
                 <input
                   className="form-control"
                   type={showPassword ? 'text' : 'password'}

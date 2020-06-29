@@ -1,0 +1,15 @@
+{
+  "name": "quiz-migrate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "migrate.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "postgres-migrations": "^4.0.3"
+  },
+  "scripts": {
+    "start": "npm run migrate",
+    "migrate": "node migrate.js && node setJWTSecret.js && echo \"done\" && exit 0"
+  }
+}

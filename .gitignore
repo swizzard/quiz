@@ -1,5 +1,10 @@
 app/node_modules
 app/yarn-error.log
 app/public
+app/build
+
+migrate/node_modules
 
 .secret
+.*.env
+.env

@@ -6,7 +6,8 @@ async function doMigration() {
     ...config,
     defaultDatabase: process.env.POSTGRES_DB
   });
-  await migrate(config, '/app/migrations');
+  await migrate(config, './migrations');
+  process.exit();
 }
 
 doMigration();

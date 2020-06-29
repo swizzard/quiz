@@ -5,15 +5,15 @@ export function newUser(email, password, displayName, ipaddr) {
     u_email: email,
     u_ipaddr: ipaddr,
     u_password: password,
-    u_display_name: displayName,
+    u_display_name: displayName
   };
-  return post('rpc/new_player', data);
+  return post('rpc/login', data);
 }
 
 export function getUser(userId) {
   const params = {
     id: `eq.${userId}`,
-    select: 'displayName:display_name,email',
+    select: 'displayName:display_name,email'
   };
   return get('player', params);
 }

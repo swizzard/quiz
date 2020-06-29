@@ -6,4 +6,4 @@ const config = {
   port: parseInt(process.env.POSTGRES_PORT)
 };
 
-export default config;
+module.exports = config;
