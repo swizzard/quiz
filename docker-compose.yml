@@ -36,10 +36,14 @@ services:
     build:
       context: ./migrate
     container_name: migrate
+    links:
+      - db:db
     volumes:
       - "./migrate:/migrate"
     env_file:
       - .migrate.env
+    depends_on:
+      - db
   app:
     build:
       context: ./app
@@ -48,18 +52,11 @@ services:
       - "./app:/app"
       - "/node_modules"
     ports:
-      - "3000:3001"
+      - "3001:3000"
     env_file: 
       - .app.env
-    # environment:
-      # NODE_ENV: ${NODE_ENV}
-      # POSTGRES_DB: ${POSTGRES_DB}
-      # POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      # POSTGRES_USER: ${POSTGRES_USER}
-      # POSTGRES_PORT: ${POSTGRES_PORT}
-      # POSTGRES_HOST: ${POSTGRES_HOST}
-      # REACT_APP_API_URL: ${API_URL}
-      # PATH: /app/node_modules/.bin:$PATH
-    # depends_on:
-    #   - db
-    # tty: true
+    links:
+      - postgrest:postgrest
+    depends_on:
+      - postgrest
+    tty: true

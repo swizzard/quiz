@@ -40,7 +40,7 @@ $$ SECURITY DEFINER LANGUAGE plpgsql;
 REVOKE ALL PRIVILEGES ON FUNCTION api.login(VARCHAR(255), TEXT, inet, VARCHAR(32)) FROM public;
 REVOKE ALL PRIVILEGES ON secret.jwt_secret FROM public;
 
-DROP ROLE player;
+DROP ROLE IF EXISTS player;
 CREATE ROLE player;
 GRANT player TO authenticator;
 

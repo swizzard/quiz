@@ -38,7 +38,7 @@ function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
           onChange={(e) =>
             dispatch({
               type: types.CHANGE_ANSWER,
-              points: e.target.value,
+              points: parseInt(e.target.value),
               answer,
               roundIx,
               qIx,
@@ -69,18 +69,19 @@ function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
 function Question({ roundIx, qIx, q, dispatch }) {
   return (
     <div className="card-body">
-      <input
+      <textarea
+        rows="5"
+        cols="40"
         className="form-control"
-        type="text"
         value={q.question}
-        onChange={(e) =>
+        onChange={(e) => {
           dispatch({
             type: types.CHANGE_QUESTION,
             roundIx,
             qIx,
             question: e.target.value
-          })
-        }
+          });
+        }}
       />
       <ul className="list-group list-group-flush">
         {q.answers.map(({ answer, points }, answerIx) => (

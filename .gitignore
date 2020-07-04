@@ -8,3 +8,4 @@ migrate/node_modules
 .secret
 .*.env
 .env
+.netlify/

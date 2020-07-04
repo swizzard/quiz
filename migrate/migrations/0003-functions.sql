@@ -60,14 +60,15 @@ DECLARE
   a json;
   q_no smallint;
 BEGIN
-  questions := data->'questions';
+  questions := (data->'questions')::json;
   round_count := 0;
   INSERT INTO api.quiz (creator, name) VALUES ((data->>'userId')::integer, data->>'name') RETURNING id INTO q_id;
   FOREACH rnd IN ARRAY ARRAY(SELECT json_array_elements(questions)) LOOP
     INSERT INTO api.quiz_round (quiz_id, round_no) VALUES (q_id, round_count) RETURNING id INTO r_id;
-    FOREACH q IN ARRAY ARRAY(SELECT json_array_elements(rnd->>'questions')) LOOP
+    q_no := 0;
+    FOREACH q IN ARRAY ARRAY(SELECT json_array_elements((rnd->'questions')::json)) LOOP
       INSERT INTO api.question (round_id, question, question_no) VALUES (r_id, q->>'question', q_no) RETURNING id INTO qe_id;
-      FOREACH a IN ARRAY ARRAY(SELECT json_array_elements(q->'answers')) LOOP
+      FOREACH a IN ARRAY ARRAY(SELECT json_array_elements((q->'answers')::json)) LOOP
         INSERT INTO api.answer (question_id, answer, points) VALUES (qe_id, a->>'answer', (a->>'points')::integer);
       END LOOP;
       q_no := q_no + 1;
