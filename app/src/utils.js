@@ -1,4 +1,4 @@
-import { cloneDeep, set } from "lodash";
+import { cloneDeep, set } from 'lodash';
 
 export function deepSet(old, val, path) {
   return set(cloneDeep(old), path, val);

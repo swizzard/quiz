@@ -160,14 +160,24 @@ function Round({ ix, questions, dispatch }) {
   );
 }
 
-function postDraft(user, id, questions, name, goBack, setError) {
+async function postDraft(user, id, questions, name, goBack, setError) {
   setError(null);
-  (id
-    ? updateDraft(user, id, name, questions)
-    : submitDraft(user, name, questions)
-  )
-    .then(() => goBack())
-    .catch(setError('There was a problem submitting your game.'));
+  if (!name || name.trim().length < 1) {
+    setError('Quiz name cannot be blank.');
+  } else {
+    try {
+      const resp = await (id
+        ? updateDraft(user, id, name, questions)
+        : submitDraft(user, name, questions));
+      if (resp.ok) {
+        goBack();
+      } else {
+        throw new Error('');
+      }
+    } catch (_e) {
+      setError('There was a problem submitting your game.');
+    }
+  }
 }
 
 export default function DraftGame({ game, goBack, user }) {
@@ -178,7 +188,7 @@ export default function DraftGame({ game, goBack, user }) {
     <>
       {error ? (
         <div className="row">
-          <div className="col-sm-12">{error}</div>
+          <div className="col-sm-12 error">{error}</div>
         </div>
       ) : null}
       <form>
@@ -191,9 +201,10 @@ export default function DraftGame({ game, goBack, user }) {
               id="quizName"
               className="form-control"
               value={state.quizName}
-              onChange={(e) =>
-                dispatch({ type: types.CHANGE_NAME, name: e.target.value })
-              }
+              onChange={(e) => {
+                setError(null);
+                dispatch({ type: types.CHANGE_NAME, name: e.target.value });
+              }}
             />
           </div>
         </div>
