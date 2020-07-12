@@ -13,6 +13,5 @@
 
 ## Misc
 
-* Get local working again
 * Routes
 * About page

@@ -7,9 +7,9 @@ services:
     links:
       - db:db
     environment:
-      PGRST_DB_URI: postgres://app_user:password@db:5432/app_db
-      PGRST_DB_SCHEMA: public
-      PGRST_DB_ANON_ROLE: app_user
+      PGRST_DB_URI: ${PGRST_DB_URI}
+      PGRST_DB_SCHEMA: ${PGRST_DB_SCHEMA}
+      PGRST_DB_ANON_ROLE: ${PGRST_DB_ANON_ROLE}
     depends_on:
       - db
   db:
@@ -19,9 +19,9 @@ services:
     expose:
       - "5432"
     environment:
-      POSTGRES_DB: app_db
-      POSTGRES_USER: app_user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - "./pgdata:/var/lib/postgresql/data"
   swagger:
@@ -31,7 +31,7 @@ services:
     expose:
       - "8080"
     environment:
-      API_URL: http://localhost:3000/
+      API_URL: ${API_URL}
   migrate:
     build:
       context: ./migrate
@@ -40,8 +40,12 @@ services:
       - db:db
     volumes:
       - "./migrate:/migrate"
-    env_file:
-      - .migrate.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - db
   app:
@@ -53,8 +57,10 @@ services:
       - "/node_modules"
     ports:
       - "3001:3000"
-    env_file: 
-      - .app.env
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
+      APP_PATH: ${APP_PATH}
+      NODE_ENV: ${NODE_ENV}
     links:
       - postgrest:postgrest
     depends_on:
