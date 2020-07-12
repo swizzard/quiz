@@ -16,3 +16,7 @@ body {
 .answers-list li:first-child {
   font-weight: bold;
 }
+
+.card-body.question {
+  border-bottom: 1px solid #00000020;
+}

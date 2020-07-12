@@ -2,6 +2,9 @@ import React, { useReducer, useState } from 'react';
 import { submitDraft, updateDraft } from './db/game';
 import { draftGameReducer, types } from './reducers/draft';
 
+const UP_ARROW = <span>&#9650;</span>;
+const DOWN_ARROW = <span>&#9660;</span>;
+
 function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
   const id = `${roundIx}-${qIx}-${answerIx}`;
   return (
@@ -62,13 +65,49 @@ function Answer({ answer, qIx, roundIx, answerIx, points, dispatch }) {
           </button>
         </div>
       </div>
+      <div className="form-group">
+        <div className="btn-group">
+          <button
+            className="btn btn-dark btn-sm"
+            type="button"
+            title="Move answer up"
+            onClick={() =>
+              dispatch({
+                type: types.REORDER_ANSWER,
+                roundIx,
+                qIx,
+                answerIx,
+                step: -1
+              })
+            }
+          >
+            {UP_ARROW}
+          </button>
+          <button
+            className="btn btn-dark btn-sm"
+            type="button"
+            title="Move answer down"
+            onClick={() =>
+              dispatch({
+                type: types.REORDER_ANSWER,
+                roundIx,
+                qIx,
+                answerIx,
+                step: 1
+              })
+            }
+          >
+            {DOWN_ARROW}
+          </button>
+        </div>
+      </div>
     </li>
   );
 }
 
 function Question({ roundIx, qIx, q, dispatch }) {
   return (
-    <div className="card-body">
+    <div className="card-body question">
       <textarea
         rows="5"
         cols="40"
@@ -114,6 +153,28 @@ function Question({ roundIx, qIx, q, dispatch }) {
           Remove Question
         </button>
       </div>
+      <div className="btn-group">
+        <button
+          className="btn btn-dark btn-sm"
+          type="button"
+          title="Move question up"
+          onClick={() =>
+            dispatch({ type: types.REORDER_QUESTION, roundIx, qIx, step: -1 })
+          }
+        >
+          {UP_ARROW}
+        </button>
+        <button
+          className="btn btn-dark btn-sm"
+          type="button"
+          title="Move question down"
+          onClick={() =>
+            dispatch({ type: types.REORDER_QUESTION, roundIx, qIx, step: 1 })
+          }
+        >
+          {DOWN_ARROW}
+        </button>
+      </div>
     </div>
   );
 }
@@ -148,10 +209,34 @@ function Round({ ix, questions, dispatch }) {
               className="btn btn-dark"
               type="button"
               onClick={() => {
-                dispatch({ types: types.DELETE_ROUND, roundIx: ix });
+                dispatch({ type: types.DELETE_ROUND, roundIx: ix });
               }}
             >
               Remove Round
+            </button>
+          </div>
+        </div>
+        <div className="col-sm-12">
+          <div className="btn-group">
+            <button
+              className="btn btn-dark btn-sm"
+              type="button"
+              title="Move round up"
+              onClick={() =>
+                dispatch({ type: types.REORDER_ROUND, roundIx: ix, step: -1 })
+              }
+            >
+              {UP_ARROW}
+            </button>
+            <button
+              className="btn btn-dark btn-sm"
+              type="button"
+              title="Move round down"
+              onClick={() =>
+                dispatch({ type: types.REORDER_ROUND, roundIx: ix, step: 1 })
+              }
+            >
+              {DOWN_ARROW}
             </button>
           </div>
         </div>
@@ -209,10 +294,10 @@ export default function DraftGame({ game, goBack, user }) {
           </div>
         </div>
         <div className="card-columns">
-          {state.quizRounds.map((_, ix) => (
+          {state.quizRounds.map((round, ix) => (
             <Round
               ix={ix}
-              questions={state.quizRounds[ix].questions}
+              questions={round.questions}
               dispatch={dispatch}
               key={`round-${ix}`}
             />
