@@ -45,7 +45,7 @@ export default function DraftDash({ setDashState, user }) {
     return () => {
       deleteGame(user.id, id)
         .then((v) => {
-          setGames(filterOutBy(games, ({ id: gameId }) => gameId === v[0].id));
+          setGames(filterOutBy(games, ({ quizId }) => quizId === v[0].id));
         })
         .catch(() => {
           setError('There was a problem deleting your game');
