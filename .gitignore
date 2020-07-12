@@ -6,6 +6,6 @@ app/build
 migrate/node_modules
 
 .secret
-.*.env
 .env
+.env.*
 .netlify/
