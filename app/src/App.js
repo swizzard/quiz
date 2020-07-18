@@ -1,21 +1,25 @@
-import React, { useState } from "react";
-import SignIn from "./SignIn";
-import DashboardPicker from "./Dashboard";
-import { retrieveUser, storeUser } from "./store-user";
+import { React, useState } from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { SignedInAs } from './UserManagement';
+import { retrieveUser, storeUser } from './store-user';
+import Nav from './Nav';
+import { Routes } from './Routes';
 
-function App() {
+export default function App() {
   const [user, setUser] = useState(retrieveUser());
 
   function su(u) {
-    storeUser(u);
     setUser(u);
-  }
-  function signOut() {
-    storeUser(null);
-    setUser(null);
+    storeUser(u);
   }
 
-  return user ? <DashboardPicker user={user} signOut={signOut} /> : <SignIn setUser={su} />;
+  return (
+    <Router>
+      <div className="container">
+        <SignedInAs user={user} />
+        <Nav />
+        <Routes user={user} setUser={su} />
+      </div>
+    </Router>
+  );
 }
-
-export default App;
