@@ -22,7 +22,7 @@ body {
 }
 
 
-.container > .row:first-child > .col-sm-12 {
+.container > .row:first-of-type > .col-sm-12 {
   padding-left: 15px;
   border: 1px solid #00000020;
 }
@@ -42,4 +42,12 @@ nav.navbar .btn:first-child {
 nav.navbar ul.navbar-nav li:before, nav.navbar ul.navbar-nav li:after {
   content: '';
   padding: 0px;
+}
+
+form {
+  margin-top: 20px;
+}
+
+.row.draft-game-row, .row.create-game-row {
+  margin: 5px 0px;
 }

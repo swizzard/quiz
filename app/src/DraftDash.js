@@ -1,26 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Switch, Route, useRouteMatch } from 'react-router-dom';
+import { Link, Route, Switch, useRouteMatch } from 'react-router-dom';
 import DraftGame from './DraftGame';
 import { deleteGame, getHostGames } from './db/game';
 import HostGameSummary from './HostGameSummary';
-import { filterOutBy } from './utils';
-
-function newGame({ display_name, id }) {
-  return {
-    name: '',
-    creator: {
-      display_name,
-      id
-    },
-    quizRounds: []
-  };
-}
 
 export default function DraftDash({ user }) {
   const [error, setError] = useState(null);
   const [games, setGames] = useState(null);
-  const [selectedGame, setSelectedGame] = useState(null);
-  const match = useRouteMatch();
+  const [update, setUpdate] = useState(0);
+  const match = useRouteMatch('/draft');
+
+  function forceUpdate() {
+    setUpdate(update + 1);
+  }
 
   function getGames() {
     getHostGames(user.id)
@@ -41,71 +33,71 @@ export default function DraftDash({ user }) {
       });
   }
 
-  useEffect(getGames, [user.id]);
+  useEffect(getGames, [user.id, update]);
 
   function removeGame(id) {
     return () => {
       deleteGame(user.id, id)
-        .then((v) => {
-          setGames(filterOutBy(games, ({ quizId }) => quizId === v[0].id));
+        .then(() => {
+          forceUpdate();
         })
         .catch(() => {
           setError('There was a problem deleting your game');
         });
     };
   }
+  return (
+    <Switch>
+      <Route path={`${match.path}/edit/:gameId`}>
+        <DraftGame user={user} forceUpdate={forceUpdate} />
+      </Route>
+      <Route path={`${match.path}/new`}>
+        <DraftGame user={user} forceUpdate={forceUpdate} />
+      </Route>
+      <Route path={`${match.path}`}>
+        <Dash
+          error={error}
+          games={games}
+          match={match}
+          removeGame={removeGame}
+          user={user}
+        />
+      </Route>
+    </Switch>
+  );
+}
 
-  function back() {
-    setSelectedGame();
-    getGames();
-  }
-
-  if (selectedGame) {
-    return <DraftGame game={selectedGame} user={user} goBack={back} />;
-  } else {
-    return (
+function Dash({ error, games, match, removeGame, user }) {
+  return (
+    <>
+      {error ? (
+        <div className="row">
+          <div className="bg-error">{error}</div>
+        </div>
+      ) : null}
       <>
-        {error ? (
-          <div className="row">
-            <div className="bg-error">{error}</div>
-          </div>
-        ) : null}
-        <>
-          {games && games.length > 0 ? (
-            games.map((g, ix) => (
-              <HostGameSummary
-                quiz={g}
-                select={setSelectedGame}
-                selectLabel="Edit Game"
-                remove={removeGame(g.quizId)}
-                key={`${user.id}-game-${ix}`}
-              />
-            ))
-          ) : (
-            <h4>No Games</h4>
-          )}
-        </>
-        <div className="row" style={{ marginTop: 10 }}>
-          <div className="col-sm-12">
-            <div className="btn-group">
-              <button
-                className="btn btn-dark"
-                onClick={() => setSelectedGame(newGame(user))}
-              >
-                Create Game
-              </button>
-            </div>
+        {games && games.length > 0 ? (
+          games.map((g, ix) => (
+            <HostGameSummary
+              quiz={g}
+              selectLabel="Edit Game"
+              remove={removeGame(g.quizId)}
+              key={`${user.id}-game-${ix}`}
+            />
+          ))
+        ) : (
+          <h4>No Games</h4>
+        )}
+      </>
+      <div className="row create-game-row">
+        <div className="col-sm-12">
+          <div className="btn-group">
+            <Link className="btn btn-dark" to={`${match.path}/new`}>
+              Create Game
+            </Link>
           </div>
         </div>
-        <Switch>
-          <Route path={`${match.path}/edit/:gameId`}>
-            <DraftGame user={user} />
-          </Route>
-          <Route path={`${match.path}/new`}>
-            <DraftGame user={user} />
-          </Route>
-        </Switch>
-      </>
-    );
-  }
+      </div>
+    </>
+  );
 }

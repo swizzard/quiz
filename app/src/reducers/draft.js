@@ -15,6 +15,7 @@ const DELETE_QUESTION = 'delete_question';
 const REORDER_QUESTION = 'reorder_question';
 
 const CHANGE_NAME = 'change_name';
+const LOAD_GAME = 'load_game';
 
 export const types = {
   ADD_ANSWER,
@@ -28,7 +29,8 @@ export const types = {
   CHANGE_QUESTION,
   DELETE_QUESTION,
   REORDER_QUESTION,
-  CHANGE_NAME
+  CHANGE_NAME,
+  LOAD_GAME
 };
 
 export function draftGameReducer(state, action) {
@@ -69,6 +71,9 @@ export function draftGameReducer(state, action) {
       break;
     case CHANGE_NAME:
       fn = change_name;
+      break;
+    case LOAD_GAME:
+      fn = load_game;
       break;
     default:
       fn = invalid_action;
@@ -176,6 +181,10 @@ function reorder_question(state, action) {
 
 function change_name(state, action) {
   return deepSet(state, action.name, 'quizName');
+}
+
+function load_game(_state, action) {
+  return action.game;
 }
 
 function invalid_action(state, action) {
