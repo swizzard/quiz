@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { getIp, newUser } from './db/user';
 
-export default function SignIn({ setUser }) {
+export default function SignIn({ user, setUser }) {
   const [ip, setIp] = useState('');
   const [signIn, setSignIn] = useState(true);
   const [email, setEmail] = useState('');
@@ -11,8 +12,12 @@ export default function SignIn({ setUser }) {
   const [showPassword, setShowPassword] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState(null);
+  const history = useHistory();
+  const location = useLocation();
 
   useEffect(() => getIp(setIp, setError), [ip]);
+
+  const { from } = location.state || { from: { pathname: '/' } };
 
   function valForm() {
     setError(null);
@@ -37,47 +42,8 @@ export default function SignIn({ setUser }) {
     return true;
   }
 
-  function doSignIn() {
-    if (valForm()) {
-      newUser(email, password, '', ip)
-        .then((resp) => {
-          if (resp.ok) {
-            return resp.json();
-          } else {
-            throw new Error('Error signing in');
-          }
-        })
-        .then(([user]) => {
-          if (user && user.id !== -1) {
-            setUser(user);
-          } else {
-            setError('Invalid email/password');
-          }
-        })
-        .catch((e) => setError(e.message));
-    }
-  }
-
-  function doSignUp() {
-    if (valForm()) {
-      newUser(email, password, displayName, ip)
-        .then((resp) => {
-          if (resp.ok) {
-            return resp.json();
-          } else {
-            throw new Error('There was an error creating your account');
-          }
-        })
-        .then((jsn) => {
-          let user = jsn[0];
-          if (user && user.id !== -1) {
-            setUser(user);
-          } else {
-            setError('There was an error creating your account');
-          }
-        })
-        .catch((e) => setError(e.message));
-    }
+  if (user) {
+    return '';
   }
   return (
     <div className="container">
@@ -110,8 +76,7 @@ export default function SignIn({ setUser }) {
             <button
               type="button"
               className="btn btn-dark btn-sm"
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 setShowPassword(!showPassword);
               }}
             >
@@ -151,7 +116,28 @@ export default function SignIn({ setUser }) {
               className="btn btn-dark"
               type="button"
               onClick={() => {
-                signIn ? doSignIn() : doSignUp();
+                signIn
+                  ? doSignIn(
+                      email,
+                      password,
+                      ip,
+                      setError,
+                      setUser,
+                      history,
+                      from,
+                      valForm
+                    )
+                  : doSignUp(
+                      email,
+                      password,
+                      displayName,
+                      ip,
+                      setError,
+                      setUser,
+                      history,
+                      from,
+                      valForm
+                    );
               }}
             >
               {signIn ? 'Sign In' : 'Sign Up'}
@@ -162,8 +148,8 @@ export default function SignIn({ setUser }) {
           <div className="col-sm-12">
             <button
               className="btn btn-dark btn-sm"
-              onClick={(e) => {
-                e.preventDefault();
+              type="button"
+              onClick={() => {
                 setSignIn(!signIn);
               }}
             >
@@ -174,4 +160,68 @@ export default function SignIn({ setUser }) {
       </form>
     </div>
   );
+}
+
+function doSignIn(
+  email,
+  password,
+  ip,
+  setError,
+  setUser,
+  history,
+  from,
+  valForm
+) {
+  if (valForm()) {
+    newUser(email, password, '', ip)
+      .then((resp) => {
+        if (resp.ok) {
+          return resp.json();
+        } else {
+          throw new Error('Error signing in');
+        }
+      })
+      .then(([user]) => {
+        if (user && user.id !== -1) {
+          setUser(user);
+          history.replace(from);
+        } else {
+          setError('Invalid email/password');
+        }
+      })
+      .catch((e) => setError(e.message));
+  }
+}
+
+function doSignUp(
+  email,
+  password,
+  displayName,
+  ip,
+  setError,
+  setUser,
+  history,
+  from,
+  valForm
+) {
+  if (valForm()) {
+    newUser(email, password, displayName, ip)
+      .then((resp) => {
+        if (resp.ok) {
+          return resp.json();
+        } else {
+          throw new Error('There was an error creating your account');
+        }
+      })
+      .then((jsn) => {
+        let user = jsn[0];
+        if (user && user.id !== -1) {
+          setUser(user);
+          history.replace(from);
+        } else {
+          setError('There was an error creating your account');
+        }
+      })
+      .catch((e) => setError(e.message));
+  }
 }

@@ -1,11 +1,13 @@
 import React from 'react';
+import { Link, useRouteMatch } from 'react-router-dom';
 
 function countQuestions(game) {
   let numQs = 0;
   game.quizRounds.forEach((r) => (numQs += r.questions.length));
   return numQs;
 }
-export default function HostGameSummary({ quiz, remove, select, selectLabel }) {
+export default function HostGameSummary({ quiz, remove, selectLabel }) {
+  const match = useRouteMatch();
   return (
     <>
       <div className="row">
@@ -23,9 +25,9 @@ export default function HostGameSummary({ quiz, remove, select, selectLabel }) {
       </div>
       <div className="row">
         <div className="col-sm-12 btn-group">
-          <button className="btn btn-dark" onClick={() => select(quiz)}>
+          <Link className="btn btn-dark" to={`${match.path}/${quiz.id}`}>
             {selectLabel}
-          </button>
+          </Link>
           <button className="btn btn-dark" onClick={remove}>
             Delete
           </button>

@@ -1,31 +1,27 @@
 import React from 'react';
-import { Switch, Redirect, Route } from 'react-router-dom';
+import { Switch, Redirect, Route, useLocation } from 'react-router-dom';
 
 import DraftDash from './DraftDash';
 import HostDash from './HostDash';
 import PlayDash from './PlayDash';
 import SignIn from './SignIn';
-import authenticate from './authenticate';
 
-function SignInRoute({ setUser }) {
-  return (
-    <Route path="/">
-      <SignIn setUser={setUser} />
-    </Route>
-  );
+export function AuthRedirect() {
+  const loc = useLocation();
+  return <Redirect to={{ pathname: '/', state: { from: loc } }} />;
 }
 
-export function PrivateRoute({ children, user, ...rest }) {
+function LoggedInRoute({ children, user, ...rest }) {
   return (
     <Route
       {...rest}
-      render={({ location }) => {
-        if (authenticate(user)) {
-          return children;
-        } else {
-          return <Redirect to={{ pathname: '/', state: { from: location } }} />;
-        }
-      }}
+      render={({ location }) =>
+        user ? (
+          children
+        ) : (
+          <Redirect to={{ pathname: '/', state: { from: location } }} />
+        )
+      }
     />
   );
 }
@@ -33,16 +29,18 @@ export function PrivateRoute({ children, user, ...rest }) {
 export function Routes({ user, setUser }) {
   return (
     <Switch>
-      <SignInRoute setUser={setUser} />
-      <PrivateRoute path="/draft" user={user}>
+      <LoggedInRoute user={user} path="/draft">
         <DraftDash user={user} setUser={setUser} />
-      </PrivateRoute>
-      <PrivateRoute path="/host" user={user}>
+      </LoggedInRoute>
+      <LoggedInRoute user={user} path="/host">
         <HostDash user={user} setUser={setUser} />
-      </PrivateRoute>
-      <PrivateRoute path="/play" user={user}>
+      </LoggedInRoute>
+      <LoggedInRoute user={user} path="/play">
         <PlayDash user={user} setUser={setUser} />
-      </PrivateRoute>
+      </LoggedInRoute>
+      <Route path="/">
+        <SignIn user={user} setUser={setUser} />
+      </Route>
     </Switch>
   );
 }

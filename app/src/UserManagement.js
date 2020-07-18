@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function SignedInAs(user) {
+export function SignedInAs({ user }) {
   if (user) {
     return (
       <div className="row">

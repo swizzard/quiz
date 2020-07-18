@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import DraftGame from './DraftGame';
 import { deleteGame, getHostGames } from './db/game';
 import HostGameSummary from './HostGameSummary';
@@ -15,10 +16,11 @@ function newGame({ display_name, id }) {
   };
 }
 
-export default function DraftDash({ setDashState, user }) {
+export default function DraftDash({ user }) {
   const [error, setError] = useState(null);
   const [games, setGames] = useState(null);
   const [selectedGame, setSelectedGame] = useState(null);
+  const match = useRouteMatch();
 
   function getGames() {
     getHostGames(user.id)
@@ -92,15 +94,17 @@ export default function DraftDash({ setDashState, user }) {
               >
                 Create Game
               </button>
-              <button
-                className="btn btn-dark"
-                onClick={() => setDashState(null)}
-              >
-                Back
-              </button>
             </div>
           </div>
         </div>
+        <Switch>
+          <Route path={`${match.path}/edit/:gameId`}>
+            <DraftGame user={user} />
+          </Route>
+          <Route path={`${match.path}/new`}>
+            <DraftGame user={user} />
+          </Route>
+        </Switch>
       </>
     );
   }

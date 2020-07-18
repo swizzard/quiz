@@ -20,3 +20,26 @@ body {
 .card-body.question {
   border-bottom: 1px solid #00000020;
 }
+
+
+.container > .row:first-child > .col-sm-12 {
+  padding-left: 15px;
+  border: 1px solid #00000020;
+}
+
+nav.navbar {
+  padding-left: 0px;
+}
+
+nav.navbar .btn {
+  margin: 0px 5px;
+}
+
+nav.navbar .btn:first-child {
+  margin-left: 0px;
+}
+
+nav.navbar ul.navbar-nav li:before, nav.navbar ul.navbar-nav li:after {
+  content: '';
+  padding: 0px;
+}
