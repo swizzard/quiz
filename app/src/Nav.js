@@ -22,11 +22,6 @@ export default function Nav({ user, setUser }) {
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="btn btn-dark" to="/play">
-                    Play a Game
-                  </Link>
-                </li>
-                <li className="nav-item">
                   <button
                     className="btn btn-dark"
                     onClick={() => setUser(null)}

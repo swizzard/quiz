@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { postAnswers } from './db/game';
+import React, { useEffect, useState } from 'react';
+import { useRouteMatch } from 'react-router-dom';
+import { AuthRedirect } from './Routes';
+import { joinGame, postAnswers } from './db/game';
 
 function newAnswers(game) {
   const anss = {};
@@ -12,6 +14,9 @@ function newAnswers(game) {
 }
 
 function PlayerAnswer({ answers, answerId, setAnswer }) {
+  if (!answers) {
+    return '';
+  }
   return (
     <li className="list-group-item">
       <input
@@ -55,6 +60,9 @@ function PlayerButtons({
   finalRound,
   submitAnswers
 }) {
+  if (finalRound < 0) {
+    return '';
+  }
   return (
     <>
       {currentRound === finalRound ? (
@@ -82,12 +90,41 @@ function PlayerButtons({
   );
 }
 
-export default function PlayerGame({ game, participantId }) {
+export default function PlayerGame({ user }) {
+  const [authorized, setAuthorized] = useState(true);
+  const [game, setGame] = useState(null);
+  const [participantId, setParticipantId] = useState(null);
   const [currentRound, setCurrentRound] = useState(0);
-  const [answers, setAnswers] = useState(newAnswers(game));
+  const [answers, setAnswers] = useState(null);
   const [posted, setPosted] = useState(false);
   const [error, setError] = useState(null);
-  const finalRound = game.quizRounds.length - 1;
+  const [finalRound, setFinalRound] = useState(-1);
+  const match = useRouteMatch();
+
+  async function loadGame() {
+    const { gameCode } = match.params;
+    const resp = await joinGame(user.id, gameCode);
+    if (resp.ok) {
+      const [
+        {
+          participantId: pId,
+          game: { quiz: g }
+        }
+      ] = await resp.json();
+      setParticipantId(pId);
+      setGame(g);
+      setAnswers(newAnswers(g));
+      setFinalRound(g.quizRounds.length - 1);
+    } else if (resp.status === 406) {
+      setAuthorized(false);
+    } else {
+      setError('There was a problem loading your game');
+    }
+  }
+
+  useEffect(() => {
+    loadGame();
+  }, [user.id, match.params.gameCode]);
 
   function setAnswer(ansId, response) {
     const as = { ...answers };
@@ -109,6 +146,16 @@ export default function PlayerGame({ game, participantId }) {
       .catch(() => setError(errMessage));
   }
 
+  if (!authorized) {
+    return <AuthRedirect />;
+  }
+  if (!game) {
+    return (
+      <div>
+        <h2>Loading...</h2>
+      </div>
+    );
+  }
   return (
     <div className="row">
       <div className="col-sm-12">

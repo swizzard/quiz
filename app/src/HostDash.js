@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import HostGame from './HostGame';
-import { deleteGame, getHostGames } from './db/game';
+import { getHostGames } from './db/game';
 import HostGameSummary from './HostGameSummary';
 
-export default function HostDash({ setDashState, user }) {
+export default function HostDash({ user }) {
   const [error, setError] = useState(null);
   const [games, setGames] = useState(null);
-  const [selectedGame, setSelectedGame] = useState(null);
+  const match = useRouteMatch();
 
   useEffect(() => {
     getHostGames(user.id)
@@ -21,49 +22,39 @@ export default function HostDash({ setDashState, user }) {
       .catch((e) => setError(e.message));
   }, [user.id]);
 
-  function removeGame({ id }) {
-    return () => {
-      deleteGame(user.id, id)
-        .then(() => {
-          setGames(games.filter((g) => g.id !== id));
-        })
-        .catch(() => setError('There was a problem deleting your game'));
-    };
-  }
-  return selectedGame ? (
-    <HostGame game={selectedGame} user={user} />
-  ) : (
+  return (
+    <Switch>
+      <Route path={`${match.path}/:gameId`}>
+        <HostGame user={user} />
+      </Route>
+      <Route path={`${match.path}`}>
+        <Dash error={error} games={games} match={match} user={user} />
+      </Route>
+    </Switch>
+  );
+}
+
+function Dash({ error, games, user }) {
+  return (
     <>
       {error ? (
         <div className="row">
-          <div className="col-sm-12 bg-error">{error}</div>
+          <div className="bg-error">{error}</div>
         </div>
       ) : null}
-      <>
-        {games ? (
-          games.map((g) => (
-            <HostGameSummary
-              key={`${g.quizId}`}
-              quiz={g}
-              select={setSelectedGame}
-              remove={removeGame(g.quizId)}
-              selectLabel="Host Game"
-            />
-          ))
-        ) : (
-          <h4>No Games</h4>
-        )}
-      </>
-      <div className="row">
-        <div className="col-sm-12 button-row">
-          <button
-            className="btn btn-dark btn-sm"
-            onClick={() => setDashState(null)}
-          >
-            Back
-          </button>
-        </div>
-      </div>
+      {games && games.length > 0 ? (
+        games.map((g, ix) => (
+          <HostGameSummary
+            quiz={g}
+            selectLabel="Host Game"
+            remove={null}
+            key={`${user.id}-game-${ix}`}
+            urlPath=""
+          />
+        ))
+      ) : (
+        <h4>No Games</h4>
+      )}
     </>
   );
 }

@@ -6,7 +6,12 @@ function countQuestions(game) {
   game.quizRounds.forEach((r) => (numQs += r.questions.length));
   return numQs;
 }
-export default function HostGameSummary({ quiz, remove, selectLabel }) {
+export default function HostGameSummary({
+  quiz,
+  remove,
+  selectLabel,
+  urlPath
+}) {
   const match = useRouteMatch();
   return (
     <>
@@ -27,13 +32,17 @@ export default function HostGameSummary({ quiz, remove, selectLabel }) {
         <div className="col-sm-12 btn-group">
           <Link
             className="btn btn-dark"
-            to={`${match.path}/edit/${quiz.quizId}`}
+            to={`${match.path}${urlPath ? `/${urlPath}` : ''}/${quiz.quizId}`}
           >
             {selectLabel}
           </Link>
-          <button className="btn btn-dark" onClick={remove}>
-            Delete
-          </button>
+          {remove ? (
+            <button className="btn btn-dark" onClick={remove}>
+              Delete
+            </button>
+          ) : (
+            ''
+          )}
         </div>
       </div>
     </>

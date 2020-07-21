@@ -83,6 +83,7 @@ function Dash({ error, games, match, removeGame, user }) {
               selectLabel="Edit Game"
               remove={removeGame(g.quizId)}
               key={`${user.id}-game-${ix}`}
+              urlPath="edit"
             />
           ))
         ) : (

@@ -1,31 +1,62 @@
 import React, { useEffect, useState } from 'react';
-import { createHostedGame, getParticipants } from './db/game';
+import { useHistory, useRouteMatch } from 'react-router-dom';
+import { createHostedGame, getHostGame, getParticipants } from './db/game';
 import ScoreGame from './ScoreGame';
+import { AuthRedirect } from './Routes';
 
-export default function HostGame({ game, user }) {
+export default function HostGame({ user }) {
   const [error, setError] = useState(null);
   const [participants, setParticipants] = useState([]);
   const [currentGame, setCurrentGame] = useState(null);
   const [currentRound, setCurrentRound] = useState(0);
   const [maxRound, setMaxRound] = useState(0);
+  const [authorized, setAuthorized] = useState(true);
   const [score, setScore] = useState(false);
+  const history = useHistory();
+  const match = useRouteMatch();
+
+  function goBack() {
+    history.push('/host');
+  }
+
+  async function getGame() {
+    const { gameId } = match.params;
+    const resp = await getHostGame(user.id, gameId);
+    if (resp.ok) {
+      return resp.json();
+    } else if (resp.status === 406) {
+      setAuthorized(false);
+      throw new Error('unauthroized');
+    } else {
+      throw new Error('There was a problem retrieving your game');
+    }
+  }
+
+  async function getCode() {
+    const { gameId } = match.params;
+    const resp = await createHostedGame(user.id, gameId);
+    if (resp.ok) {
+      return resp.json();
+    } else {
+      throw new Error('There was an error starting your game');
+    }
+  }
+
+  async function hostGame() {
+    try {
+      const game = await getGame();
+      const code = await getCode();
+      game.code = code;
+      setCurrentGame(game);
+      setMaxRound(game.quizRounds.length - 1);
+    } catch (e) {
+      setError(e.message);
+    }
+  }
 
   useEffect(() => {
-    createHostedGame(user.id, game.quizId)
-      .then((resp) => {
-        if (resp.ok) {
-          return resp.json();
-        } else {
-          throw new Error('There was a problem starting your game');
-        }
-      })
-      .then((code) => {
-        game.code = code;
-        setCurrentGame(game);
-        setMaxRound(game.quizRounds.length - 1);
-      })
-      .catch((e) => setError(e.message));
-  }, [game, user.id]);
+    hostGame();
+  }, [user.id, match.params.gameId]);
 
   function updateParticipants() {
     setError(null);
@@ -43,9 +74,11 @@ export default function HostGame({ game, user }) {
       .catch((e) => setError(e.message));
   }
 
-  if (score) {
-    return <ScoreGame code={game.code} />;
-  } else if (!game) {
+  if (!authorized) {
+    return <AuthRedirect />;
+  } else if (score) {
+    return <ScoreGame code={currentGame.code} />;
+  } else if (!currentGame) {
     return (
       <div className="row">
         <div className={`col-sm-12 ${error ? 'bg-error' : ''}`}>
@@ -63,10 +96,10 @@ export default function HostGame({ game, user }) {
         ) : null}
         <div className="row">
           <div className="col-sm-12">
-            <h4>{game.quizName}</h4>
+            <h4>{currentGame.quizName}</h4>
           </div>
         </div>
-        <CopyCodeButton code={game.code} />
+        <CopyCodeButton code={currentGame.code} />
         <div className="row">
           <div className="col-sm-12">
             <div className="card">
@@ -95,9 +128,9 @@ export default function HostGame({ game, user }) {
         <div className="row">
           <div className="col-sm-12">
             <Round
-              key={`game-${game.quizId}-round-${currentRound}`}
+              key={`game-${currentGame.quizId}-round-${currentRound}`}
               roundNo={currentRound}
-              questions={game.quizRounds[currentRound].questions}
+              questions={currentGame.quizRounds[currentRound].questions}
             />
           </div>
         </div>
@@ -186,29 +219,30 @@ function HostQuestion({ question, answers, ix }) {
 function CopyCodeButton({ code }) {
   const [copied, setCopied] = useState(false);
   const [err, setErr] = useState(false);
-  const copyCode = () =>
+  const link = `${window.location.origin}/play/${code}`;
+  const copyLink = () =>
     navigator.clipboard
-      .writeText(code)
+      .writeText(link)
       .then(() => setCopied(true))
       .catch(() => setErr(true));
   return (
     <div className="card">
       <div className="card-body">
-        <h5 className="card-title">Code: {code}</h5>
+        <h5 className="card-title">Link: {link}</h5>
         <h6 className="card-subtitle">
-          Send this code to your players so they can join the game!
+          Send this link to your players so they can join the game!
         </h6>
       </div>
       <div className="card-body">
         {!copied && !err ? (
-          <button className="btn btn-dark" type="button" onClick={copyCode}>
+          <button className="btn btn-dark" type="button" onClick={copyLink}>
             Copy
           </button>
         ) : copied ? (
           <span className="small">Copied!</span>
         ) : (
           <span className="bg-danger">
-            An error occurred&mdash;please copy the code manually.
+            An error occurred&mdash;please copy the link manually.
           </span>
         )}
       </div>
