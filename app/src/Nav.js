@@ -31,6 +31,22 @@ export default function Nav({ user, setUser }) {
                 </li>
               </ul>
             </div>
+            <div className="navbar navbar-expand-lg navbar-light">
+              <div className="collapse navbar-collapse">
+                <ul className="navbar-nav">
+                  <li className="nav-item left-border">
+                    <Link className="btn btn-dark btn-sm" to="/help">
+                      Help
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link className="btn btn-dark btn-sm" to="/about">
+                      About
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </nav>
         </div>
       </div>

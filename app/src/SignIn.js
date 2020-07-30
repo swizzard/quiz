@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 
 import { getIp, newUser } from './db/user';
 
@@ -158,6 +158,14 @@ export default function SignIn({ user, setUser }) {
           </div>
         </div>
       </form>
+      <div className="btn-group">
+        <Link className="btn btn-dark btn-small" to="/about">
+          About
+        </Link>
+        <Link className="btn btn-dark btn-small" to="/help">
+          Help
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Switch, Redirect, Route, useLocation } from 'react-router-dom';
 
+import { About, Help } from './About';
 import DraftDash from './DraftDash';
 import HostDash from './HostDash';
 import PlayDash from './PlayDash';
@@ -38,6 +39,12 @@ export function Routes({ user, setUser }) {
       <LoggedInRoute user={user} path="/play">
         <PlayDash user={user} setUser={setUser} />
       </LoggedInRoute>
+      <Route path="/about">
+        <About />
+      </Route>
+      <Route path="/help">
+        <Help />
+      </Route>
       <Route path="/">
         <SignIn user={user} setUser={setUser} />
       </Route>

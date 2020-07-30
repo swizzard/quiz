@@ -51,3 +51,8 @@ form {
 .row.draft-game-row, .row.create-game-row {
   margin: 5px 0px;
 }
+
+pre {
+  display: inline;
+  padding: 0px;
+}

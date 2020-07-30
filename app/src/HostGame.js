@@ -165,6 +165,17 @@ export default function HostGame({ user }) {
             ) : null}
           </div>
         </div>
+        <div className="row">
+          <div className="col-sm-12 btn-group">
+            <button
+              className="btn btn-dark btn-small"
+              type="button"
+              onClick={() => goBack()}
+            >
+              Back
+            </button>
+          </div>
+        </div>
       </>
     );
   }
