@@ -56,3 +56,7 @@ pre {
   display: inline;
   padding: 0px;
 }
+
+a.btn.btn-dark:visited {
+  color: #FFF;
+}

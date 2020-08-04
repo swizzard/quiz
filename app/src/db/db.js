@@ -1,6 +1,7 @@
 import { stringify } from 'query-string';
 
 const API_URL = process.env.REACT_APP_API_URL;
+debugger;
 
 export const errors = {
   KEY_ERROR: 'key error'

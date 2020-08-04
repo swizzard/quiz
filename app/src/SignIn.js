@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 
-import { getIp, newUser } from './db/user';
+import { newUser } from './db/user';
 
 export default function SignIn({ user, setUser }) {
-  const [ip, setIp] = useState('');
   const [signIn, setSignIn] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,8 +13,6 @@ export default function SignIn({ user, setUser }) {
   const [error, setError] = useState(null);
   const history = useHistory();
   const location = useLocation();
-
-  useEffect(() => getIp(setIp, setError), [ip]);
 
   const { from } = location.state || { from: { pathname: '/' } };
 
@@ -120,7 +117,6 @@ export default function SignIn({ user, setUser }) {
                   ? doSignIn(
                       email,
                       password,
-                      ip,
                       setError,
                       setUser,
                       history,
@@ -131,7 +127,6 @@ export default function SignIn({ user, setUser }) {
                       email,
                       password,
                       displayName,
-                      ip,
                       setError,
                       setUser,
                       history,
@@ -170,18 +165,9 @@ export default function SignIn({ user, setUser }) {
   );
 }
 
-function doSignIn(
-  email,
-  password,
-  ip,
-  setError,
-  setUser,
-  history,
-  from,
-  valForm
-) {
+function doSignIn(email, password, setError, setUser, history, from, valForm) {
   if (valForm()) {
-    newUser(email, password, '', ip)
+    newUser(email, password, '')
       .then((resp) => {
         if (resp.ok) {
           return resp.json();
@@ -205,7 +191,6 @@ function doSignUp(
   email,
   password,
   displayName,
-  ip,
   setError,
   setUser,
   history,
@@ -213,7 +198,7 @@ function doSignUp(
   valForm
 ) {
   if (valForm()) {
-    newUser(email, password, displayName, ip)
+    newUser(email, password, displayName)
       .then((resp) => {
         if (resp.ok) {
           return resp.json();
